@@ -786,6 +786,58 @@
     margin-bottom:10px;
     font-size:12px;
   }
+  .streak-card{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:linear-gradient(135deg,var(--pink-pale),var(--pink));
+  }
+  .streak-emoji{
+    font-size:40px;
+    line-height:1;
+  }
+  .streak-number{
+    font-size:24px;
+    font-weight:800;
+    color:var(--pink-deep);
+  }
+  .streak-label{
+    font-size:12.5px;
+    font-weight:700;
+    color:var(--ink);
+  }
+  .cat-breakdown-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:10px;
+    font-size:12.5px;
+  }
+  .cat-breakdown-name{
+    width:76px;
+    flex-shrink:0;
+    color:var(--ink);
+    font-weight:700;
+  }
+  .cat-breakdown-track{
+    flex:1;
+    background:var(--pink-pale);
+    border-radius:8px;
+    overflow:hidden;
+    height:14px;
+    border:1px solid var(--line);
+  }
+  .cat-breakdown-fill{
+    background:linear-gradient(90deg,var(--pink),var(--pink-deep));
+    height:100%;
+  }
+  .cat-breakdown-pct{
+    width:38px;
+    flex-shrink:0;
+    text-align:right;
+    color:var(--ink-dim);
+    font-weight:700;
+  }
   .day-grid{
     display:grid;
     grid-template-columns:repeat(9, 1fr);
@@ -1432,6 +1484,14 @@
     </div>
 
     <div id="progressOverviewMode">
+      <div class="card streak-card" id="streakCard" style="display:none;">
+        <div class="streak-emoji">🔥</div>
+        <div class="streak-text">
+          <div class="streak-number" id="streakNumber"></div>
+          <div class="streak-label" id="streakLabel"></div>
+        </div>
+      </div>
+
       <div class="card">
         <div class="group-toggle" id="progressOverviewRangeToggle" style="margin-bottom:12px;">
           <button class="toggle-btn active" data-range="week" type="button">Week vs week</button>
@@ -1443,6 +1503,11 @@
           <div class="stat"><div class="v" id="poSessions">-</div><div class="l">Sessions</div></div>
         </div>
         <div class="ov-records" id="poCompareLine"></div>
+      </div>
+
+      <div class="card" id="breakdownCard" style="display:none;">
+        <div class="section-title">💪 Muscle breakdown</div>
+        <div id="categoryBreakdown"></div>
       </div>
 
       <div class="card">
@@ -3383,6 +3448,80 @@ function getPreviousRange(range, rangeType){
   return { start: toDateStr(first), end: toDateStr(last) };
 }
 
+// counts consecutive weeks (Mon-Sun) with at least one workout, walking back from
+// the most recent trained week — this week doesn't have to be trained YET for the
+// streak to still count, so a mid-week rest doesn't feel like a broken streak
+function computeWeekStreak(){
+  const trainedWeeks = new Set(workouts.map(w => mondayOf(w.date)));
+  if(trainedWeeks.size === 0) return 0;
+
+  const thisWeek = mondayOf(todayStr());
+  let cursor = thisWeek;
+  if(!trainedWeeks.has(cursor)){
+    const d = new Date(cursor+'T00:00:00');
+    d.setDate(d.getDate()-7);
+    cursor = toDateStr(d);
+  }
+  if(!trainedWeeks.has(cursor)) return 0;
+
+  let streak = 0;
+  while(trainedWeeks.has(cursor)){
+    streak++;
+    const d = new Date(cursor+'T00:00:00');
+    d.setDate(d.getDate()-7);
+    cursor = toDateStr(d);
+  }
+  return streak;
+}
+
+function renderStreak(){
+  const streak = computeWeekStreak();
+  const card = $('streakCard');
+  if(streak === 0){
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = 'flex';
+  $('streakNumber').textContent = `${streak} week${streak===1?'':'s'}`;
+  $('streakLabel').textContent = streak === 1 ? 'streak, keep it going!' : 'streak in a row 🐾';
+}
+
+// looks up which category an exercise belongs to, for the muscle breakdown
+function categoryForExerciseName(name){
+  const match = getAllKnownExercises().find(e => e.display.toLowerCase() === name.toLowerCase());
+  return match ? match.category : 'Other';
+}
+
+function renderCategoryBreakdown(entries){
+  const card = $('breakdownCard');
+  if(entries.length === 0){
+    card.style.display = 'none';
+    return;
+  }
+  const byCat = {};
+  entries.forEach(w=>{
+    const cat = categoryForExerciseName(w.exercise);
+    byCat[cat] = (byCat[cat] || 0) + calcVolume([w]);
+  });
+  const rows = Object.entries(byCat).filter(([,v])=>v>0).sort((a,b)=> b[1]-a[1]);
+  if(rows.length === 0){
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = 'block';
+  const total = rows.reduce((sum,[,v])=>sum+v, 0);
+  $('categoryBreakdown').innerHTML = rows.map(([cat,vol])=>{
+    const pct = Math.round((vol/total)*100);
+    return `
+      <div class="cat-breakdown-row">
+        <div class="cat-breakdown-name">${cat}</div>
+        <div class="cat-breakdown-track"><div class="cat-breakdown-fill" style="width:${pct}%"></div></div>
+        <div class="cat-breakdown-pct">${pct}%</div>
+      </div>
+    `;
+  }).join('');
+}
+
 function renderProgressOverview(){
   const isWeek = progressOverviewRange === 'week';
   const periodWord = isWeek ? 'week' : 'month';
@@ -3391,6 +3530,9 @@ function renderProgressOverview(){
 
   const curEntries = workouts.filter(w=> w.date >= curRange.start && w.date <= curRange.end);
   const prevEntries = workouts.filter(w=> w.date >= prevRange.start && w.date <= prevRange.end);
+
+  renderStreak();
+  renderCategoryBreakdown(curEntries);
 
   const curVolume = calcVolume(curEntries), prevVolume = calcVolume(prevEntries);
   const curReps = calcReps(curEntries), prevReps = calcReps(prevEntries);
