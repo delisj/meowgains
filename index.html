@@ -223,21 +223,57 @@
     font-size:14.5px;
     color:var(--pink-deep);
     margin-bottom:4px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .plan-card-actions{
+    display:none;
+  }
+  .plan-card.expanded .plan-card-actions{
+    display:flex;
+  }
+  .plan-card.expanded .plan-card-name .chevron{
+    transform:rotate(180deg);
   }
   .plan-card-exercises{
     font-size:12px;
     color:var(--ink-dim);
     margin-bottom:10px;
   }
-  .plan-card-actions{
+  .plan-card-meta{
     display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .plan-tag{
+    background:var(--bg-raised);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:3px 9px;
+    font-size:10.5px;
+    font-weight:800;
+    color:var(--pink-deep);
+  }
+  .plan-usage{
+    font-size:11px;
+    color:var(--ink-dim);
+    font-weight:600;
+  }
+  .plan-card-actions{
+    flex-wrap:wrap;
     gap:8px;
   }
   .plan-card-actions button{
     flex:1;
+    min-width:70px;
     border-radius:10px;
-    padding:8px;
-    font-size:12px;
+    padding:8px 4px;
+    font-size:11.5px;
     font-weight:800;
     cursor:pointer;
     border:2px solid var(--line);
@@ -250,6 +286,10 @@
   .plan-delete-btn{
     background:none;
     color:var(--ink-dim);
+  }
+  .plan-edit-btn, .plan-duplicate-btn, .plan-share-btn{
+    background:none;
+    color:var(--pink-deep);
   }
   .exercise-search-wrap{
     position:relative;
@@ -429,6 +469,9 @@
     text-transform:uppercase;
     letter-spacing:0.5px;
   }
+  .exercise-block.collapsed .block-num{
+    cursor:pointer;
+  }
   .remove-block-btn{
     background:none;
     border:none;
@@ -473,6 +516,25 @@
   }
   .exercise-block.done .block-summary{
     display:flex;
+  }
+  .exercise-block.collapsed .block-body{
+    display:none;
+  }
+  .exercise-block.collapsed .block-summary{
+    display:flex;
+    cursor:pointer;
+  }
+  .warmup-card.done .block-body{
+    display:none;
+  }
+  .warmup-card.done .block-summary{
+    display:flex;
+  }
+  .warmup-card .done-toggle-btn{
+    opacity:0.35;
+  }
+  .warmup-card.done .done-toggle-btn{
+    opacity:1;
   }
   .undo-done-btn{
     background:none;
@@ -542,7 +604,7 @@
   }
   .session-ex{
     font-weight:800;
-    font-size:15px;
+    font-size:12.5px;
     color:var(--pink-deep);
   }
   .session-ex::before{ content:"🐾 "; }
@@ -680,6 +742,54 @@
   }
   .date-group.expanded .date-body{
     display:block;
+  }
+  .day-session-group{
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 12px;
+    margin-bottom:8px;
+    background:var(--bg-raised);
+  }
+  .day-session-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    gap:10px;
+  }
+  .day-session-left{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .day-session-date{
+    font-weight:800;
+    font-size:13px;
+    color:var(--ink);
+  }
+  .day-session-right{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-shrink:0;
+  }
+  .day-session-body{
+    display:none;
+    margin-top:10px;
+  }
+  .day-session-group.expanded .day-session-body{
+    display:block;
+  }
+  .day-session-group.expanded .chevron{
+    transform:rotate(180deg);
+  }
+  .history-total-count{
+    text-align:center;
+    font-size:12px;
+    color:var(--ink-dim);
+    font-weight:700;
+    padding:14px 0 6px;
   }
   .date-title{
     font-weight:800;
@@ -837,6 +947,57 @@
     text-align:right;
     color:var(--ink-dim);
     font-weight:700;
+  }
+  .fun-comparison-card{
+    background:var(--pink-pale);
+    text-align:center;
+  }
+  .fun-comparison-text{
+    font-size:14px;
+    font-weight:600;
+    color:var(--ink);
+    line-height:1.5;
+  }
+  .fun-comparison-text strong{
+    color:var(--pink-deep);
+  }
+  .heatmap-scroll{
+    overflow-x:auto;
+    padding-bottom:4px;
+  }
+  .heatmap-grid{
+    display:flex;
+    gap:3px;
+    width:max-content;
+  }
+  .heatmap-col{
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+  }
+  .heatmap-cell{
+    width:9px;
+    height:9px;
+    border-radius:2px;
+    background:var(--pink-pale);
+    border:1px solid var(--line);
+    display:inline-block;
+  }
+  .heatmap-cell.level-1{ background:var(--pink); opacity:0.35; border-color:transparent; }
+  .heatmap-cell.level-2{ background:var(--pink); opacity:0.7; border-color:transparent; }
+  .heatmap-cell.level-3{ background:var(--pink-deep); opacity:1; border-color:transparent; }
+  .heatmap-cell.future{ opacity:0.15 !important; }
+  .heatmap-legend{
+    display:flex;
+    align-items:center;
+    gap:4px;
+    font-size:10.5px;
+    color:var(--ink-dim);
+    margin-top:8px;
+  }
+  .heatmap-legend .heatmap-cell{
+    width:9px;
+    height:9px;
   }
   .day-grid{
     display:grid;
@@ -1372,8 +1533,8 @@
   <div class="header-top">
     <div class="brand"><span class="paws">🐾</span><h1>Meow<span> Gains</span></h1><span class="paws">🐾</span></div>
     <div class="header-actions">
-      <button id="dataMenuToggle" class="theme-toggle" type="button" title="Settings &amp; backup">⚙️</button>
       <button id="themeToggle" class="theme-toggle" type="button" title="Toggle Goth Meow mode">🖤</button>
+      <button id="dataMenuToggle" class="theme-toggle" type="button" title="Settings &amp; backup">⚙️</button>
     </div>
   </div>
   <div class="sub">meow much did you lift today? ✨</div>
@@ -1404,6 +1565,19 @@
 
       <label>Notes</label>
       <input type="text" id="notesInput" placeholder="feeling kinda strong 🐾">
+    </div>
+
+    <div class="card warmup-card" id="warmupCard">
+      <div class="block-header">
+        <div class="block-num">🔥 Warm-up</div>
+        <div class="block-header-actions">
+          <button class="done-toggle-btn" id="warmupDoneBtn" type="button" title="Mark warm-up done">✓</button>
+        </div>
+      </div>
+      <div class="block-summary" id="warmupSummary"></div>
+      <div class="block-body" id="warmupBody">
+        <input type="text" id="warmupInput" placeholder="e.g. 5 min light cardio + dynamic stretches">
+      </div>
     </div>
 
     <div id="exerciseBlocksContainer"></div>
@@ -1458,9 +1632,12 @@
     </div>
 
     <div class="group-toggle" id="historyModeToggle">
-      <button class="toggle-btn active" data-mode="date" type="button">📅 Date &amp; title</button>
+      <button class="toggle-btn active" data-mode="date" type="button">📅 Workouts</button>
       <button class="toggle-btn" data-mode="month" type="button">🌙 Month</button>
       <button class="toggle-btn" data-mode="exercise" type="button">🐾 Exercise</button>
+    </div>
+    <div class="filter-row" id="historySearchRow">
+      <input type="text" id="historySearchInput" placeholder="🐾 Search exercises, titles, or notes...">
     </div>
     <div class="filter-row" id="historyFilterRow" style="display:none;">
       <select id="historyFilter">
@@ -1492,6 +1669,10 @@
         </div>
       </div>
 
+      <div class="card fun-comparison-card" id="funComparisonCard" style="display:none;">
+        <div class="fun-comparison-text" id="funComparisonText"></div>
+      </div>
+
       <div class="card">
         <div class="group-toggle" id="progressOverviewRangeToggle" style="margin-bottom:12px;">
           <button class="toggle-btn active" data-range="week" type="button">Week vs week</button>
@@ -1511,8 +1692,9 @@
       </div>
 
       <div class="card">
-        <div class="section-title" id="poCalendarTitle">🗓️ Sessions this month</div>
-        <div class="day-grid" id="poCalendarGrid"></div>
+        <div class="section-title" id="yearHeatmapTitle">🗓️ Year in training</div>
+        <div class="heatmap-scroll"><div class="heatmap-grid" id="yearHeatmapGrid"></div></div>
+        <div class="heatmap-legend">less <span class="heatmap-cell"></span><span class="heatmap-cell level-1"></span><span class="heatmap-cell level-2"></span><span class="heatmap-cell level-3"></span> more</div>
       </div>
 
       <div class="card">
@@ -1623,8 +1805,9 @@
     <div class="settings-section">
       <div class="settings-section-title">Backup</div>
       <button class="btn btn-primary" id="exportDataBtn" type="button" style="margin-bottom:10px;">⬇️ Download backup</button>
-      <label class="btn btn-ghost" for="importDataInput" style="display:block; text-align:center; cursor:pointer;">⬆️ Restore from backup</label>
+      <label class="btn btn-ghost" for="importDataInput" style="display:block; text-align:center; cursor:pointer; margin-bottom:10px;">⬆️ Restore from backup</label>
       <input type="file" id="importDataInput" accept="application/json" style="display:none;">
+      <button class="btn btn-ghost" id="exportCsvBtn" type="button" style="display:block; width:100%;">📊 Download as CSV</button>
     </div>
 
     <div class="settings-section danger-zone">
@@ -1633,6 +1816,23 @@
     </div>
 
     <button class="btn btn-ghost" id="settingsCloseBtn" type="button" style="margin-top:4px;">Close</button>
+  </div>
+</div>
+
+<div class="pr-overlay" id="warmupReminderOverlay">
+  <div class="pr-card" style="max-width:300px;">
+    <div class="pr-title" style="font-size:16px;">🔥 Quick heads up!</div>
+    <div class="pr-sub" style="margin-bottom:16px;">Warming up really helps avoid injuries, don't skip it if you can help it 🐾</div>
+    <button class="btn btn-primary" id="warmupReminderOkBtn" type="button">Got it!</button>
+  </div>
+</div>
+
+<div class="pr-overlay" id="planSuggestionOverlay">
+  <div class="pr-card" style="max-width:300px;">
+    <div class="pr-title" style="font-size:16px;">💡 Psst!</div>
+    <div class="pr-sub" id="planSuggestionPopupText" style="margin-bottom:16px;"></div>
+    <button class="btn btn-primary" id="planSuggestionPopupStartBtn" type="button" style="margin-bottom:10px;">▶️ Start it</button>
+    <button class="btn btn-ghost" id="planSuggestionPopupDismissBtn" type="button">Maybe later</button>
   </div>
 </div>
 
@@ -2022,6 +2222,54 @@ $('exportDataBtn').addEventListener('click', ()=>{
   showToast('Backup downloaded 🎀');
 });
 
+function csvEscape(val){
+  const str = String(val);
+  if(str.includes(',') || str.includes('"') || str.includes('\n')){
+    return '"' + str.replace(/"/g, '""') + '"';
+  }
+  return str;
+}
+
+function generateWorkoutsCSV(){
+  const rows = [['Date','Title','Exercise','Category','Set','Weight','Reps','Duration(sec)','Unit','Notes']];
+  workouts.slice().sort((a,b)=> a.date.localeCompare(b.date)).forEach(w=>{
+    const cat = categoryForExerciseName(w.exercise);
+    w.sets.forEach((s,i)=>{
+      rows.push([
+        w.date,
+        w.title || '',
+        w.exercise,
+        cat,
+        i+1,
+        w.timeBased ? '' : (s.weight ?? ''),
+        w.timeBased ? '' : (s.reps ?? ''),
+        w.timeBased ? (s.duration ?? '') : '',
+        w.unit || 'kg',
+        w.notes || ''
+      ]);
+    });
+  });
+  return rows.map(r => r.map(csvEscape).join(',')).join('\n');
+}
+
+$('exportCsvBtn').addEventListener('click', ()=>{
+  if(workouts.length === 0){
+    showToast('Nothing logged yet to export 🐾');
+    return;
+  }
+  const csv = generateWorkoutsCSV();
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'meowgains-workouts-' + todayStr() + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded 📊');
+});
+
 $('importDataInput').addEventListener('change', (e)=>{
   const file = e.target.files[0];
   if(!file) return;
@@ -2267,7 +2515,10 @@ document.querySelectorAll('.tab').forEach(tab=>{
     $('view-'+tab.dataset.view).classList.add('active');
     if(tab.dataset.view === 'history'){ renderHistory(); renderOverview(); }
     if(tab.dataset.view === 'progress') renderProgressExerciseList();
-    if(tab.dataset.view === 'plan') renderPlanList();
+    if(tab.dataset.view === 'plan'){
+      renderPlanList();
+      maybeShowPlanSuggestionPopup();
+    }
     if(tab.dataset.view === 'log') maybeShowLogKitty();
   });
 });
@@ -2474,7 +2725,7 @@ function renderExerciseSearchResults(block){
 
   if(shown.length === 0){
     resultsEl.innerHTML = query
-      ? `<div class="exercise-search-empty">No matches — keep typing and a category picker will appear so you can add "${input.value.trim()}" as new 🐾</div>`
+      ? `<div class="exercise-search-empty">No matches, keep typing and a category picker will appear so you can add "${input.value.trim()}" as new 🐾</div>`
       : `<div class="exercise-search-empty">Start typing to search 🐾</div>`;
     resultsEl.classList.add('show');
     return;
@@ -2697,7 +2948,7 @@ function attachBlockContainerEvents(container){
         const name = block.querySelector('.exercise-input').value.trim() || 'Exercise';
         const setCount = block.querySelectorAll('.sets-container .set-row').length;
         block.querySelector('.block-summary').innerHTML =
-          `<span>✓ ${name} — ${setCount} set${setCount===1?'':'s'}</span><button class="undo-done-btn" type="button">↺ Edit</button>`;
+          `<span>✓ ${name}, ${setCount} set${setCount===1?'':'s'}</span><button class="undo-done-btn" type="button">↺ Edit</button>`;
         return;
       }
 
@@ -2705,7 +2956,8 @@ function attachBlockContainerEvents(container){
       const date = $('dateInput').value || todayStr();
       const title = $('titleInput').value.trim();
       const sessionNotes = $('notesInput').value.trim();
-      const result = buildEntryFromBlock(block, date, title, sessionNotes, []);
+      const sessionWarmup = $('warmupInput').value.trim();
+      const result = buildEntryFromBlock(block, date, title, sessionNotes, [], sessionWarmup);
       if(!result){
         showToast('Add a weight/rep or duration first 🐾');
         return;
@@ -2729,12 +2981,13 @@ function attachBlockContainerEvents(container){
       block.classList.add('done');
       const setCount = result.entry.sets.length;
       block.querySelector('.block-summary').innerHTML =
-        `<span>✓ ${result.exName} — ${setCount} set${setCount===1?'':'s'} saved</span><button class="undo-done-btn" type="button">↺ Edit</button>`;
+        `<span>✓ ${result.exName}, ${setCount} set${setCount===1?'':'s'} saved</span><button class="undo-done-btn" type="button">↺ Edit</button>`;
 
       if(result.isRecord){
         celebrateRecord(result.exName, result.recordValue, result.recordUnit);
       } else {
         showToast(`${result.exName} saved 💖`);
+        maybeShowWarmupReminder();
       }
     }
     if(e.target.classList.contains('undo-done-btn')){
@@ -2747,6 +3000,13 @@ function attachBlockContainerEvents(container){
         delete block.dataset.savedEntryId;
       }
       block.classList.remove('done');
+    }
+    if(e.target.closest('.block-summary') || e.target.closest('.block-num')){
+      const block = e.target.closest('.exercise-block');
+      // tapping a space-saving collapsed summary, or the "Exercise N" title itself, re-expands it
+      if(block.classList.contains('collapsed') && !e.target.closest('.undo-done-btn')){
+        block.classList.remove('collapsed');
+      }
     }
     if(e.target.classList.contains('set-timer-btn')){
       const btn = e.target;
@@ -2772,7 +3032,22 @@ function attachBlockContainerEvents(container){
 attachBlockContainerEvents($('exerciseBlocksContainer'));
 if($('planBlocksContainer')) attachBlockContainerEvents($('planBlocksContainer'));
 
-$('addExerciseBtn').addEventListener('click', ()=> addExerciseBlock($('exerciseBlocksContainer')));
+// space-saving only — collapses a block visually without saving anything, so
+// adding more exercises doesn't turn the Log tab into an endless scroll
+function collapseBlockForSpace(block){
+  if(block.classList.contains('done') || block.classList.contains('collapsed')) return;
+  const name = block.querySelector('.exercise-input').value.trim();
+  if(!name) return; // nothing entered yet, leave it open
+  const setCount = block.querySelectorAll('.sets-container .set-row').length;
+  block.classList.add('collapsed');
+  block.querySelector('.block-summary').innerHTML =
+    `<span>${name} — ${setCount} set${setCount===1?'':'s'}</span><span style="font-size:11px; color:var(--pink-deep); text-decoration:underline;">▾ tap to expand</span>`;
+}
+
+$('addExerciseBtn').addEventListener('click', ()=>{
+  $('exerciseBlocksContainer').querySelectorAll('.exercise-block').forEach(collapseBlockForSpace);
+  addExerciseBlock($('exerciseBlocksContainer'));
+});
 if($('addPlanExerciseBtn')) $('addPlanExerciseBtn').addEventListener('click', ()=> addExerciseBlock($('planBlocksContainer')));
 
 function resetLogForm(){
@@ -2788,8 +3063,43 @@ function fullResetLogForm(){
   $('dateInput').value = todayStr();
   $('titleInput').value = '';
   $('notesInput').value = '';
+  $('warmupInput').value = '';
+  $('warmupCard').classList.remove('done');
+  warmupReminderShownThisSession = false;
   resetLogForm();
 }
+
+let warmupReminderShownThisSession = false;
+
+function isWarmupDone(){
+  return $('warmupCard').classList.contains('done');
+}
+
+function maybeShowWarmupReminder(){
+  if(isWarmupDone() || warmupReminderShownThisSession) return;
+  warmupReminderShownThisSession = true;
+  $('warmupReminderOverlay').classList.add('show');
+}
+
+$('warmupReminderOkBtn').addEventListener('click', ()=>{
+  $('warmupReminderOverlay').classList.remove('show');
+});
+$('warmupReminderOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'warmupReminderOverlay') $('warmupReminderOverlay').classList.remove('show');
+});
+
+$('warmupDoneBtn').addEventListener('click', ()=>{
+  const card = $('warmupCard');
+  if(card.classList.contains('done')) return;
+  card.classList.add('done');
+  const text = $('warmupInput').value.trim();
+  $('warmupSummary').innerHTML =
+    `<span>✓ ${text || 'Warmed up!'}</span><button class="undo-done-btn" id="warmupUndoBtn" type="button">↺ Edit</button>`;
+  $('warmupUndoBtn').addEventListener('click', ()=>{
+    card.classList.remove('done');
+  });
+  scheduleDraftSave();
+});
 
 $('clearFormBtn').addEventListener('click', ()=>{
   if(!confirm("Clear everything you've entered and start fresh? This doesn't save anything.")) return;
@@ -2823,7 +3133,7 @@ function resolveCategoryForBlock(block, exName){
 // builds a workout entry from one exercise block, checking it against history (plus
 // any entries already queued in the same save) to see if it's a new record. Returns
 // null if the block has nothing valid to save.
-function buildEntryFromBlock(block, date, title, sessionNotes, queuedEntries){
+function buildEntryFromBlock(block, date, title, sessionNotes, queuedEntries, warmup){
   const typedName = block.querySelector('.exercise-input').value.trim();
   if(!typedName) return null;
   const exName = resolveCanonicalExerciseName(typedName);
@@ -2850,7 +3160,7 @@ function buildEntryFromBlock(block, date, title, sessionNotes, queuedEntries){
   const exerciseNote = block.querySelector('.exercise-notes-input').value.trim();
   const entry = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-    date, exercise: exName, sets, notes: exerciseNote || sessionNotes, unit, title, timeBased: isTime
+    date, exercise: exName, sets, notes: exerciseNote || sessionNotes, warmup: warmup || '', unit, title, timeBased: isTime
   };
 
   const priorAll = [...workouts, ...queuedEntries].filter(w=>w.exercise===exName);
@@ -2873,6 +3183,7 @@ async function saveCurrentBlocks(){
   const date = $('dateInput').value || todayStr();
   const title = $('titleInput').value.trim();
   const sessionNotes = $('notesInput').value.trim();
+  const sessionWarmup = $('warmupInput').value.trim();
   const blocks = Array.from($('exerciseBlocksContainer').querySelectorAll('.exercise-block'))
     .filter(b => !b.classList.contains('done'));
 
@@ -2883,7 +3194,7 @@ async function saveCurrentBlocks(){
   let recordUnit = unit;
 
   blocks.forEach(block=>{
-    const result = buildEntryFromBlock(block, date, title, sessionNotes, newEntries);
+    const result = buildEntryFromBlock(block, date, title, sessionNotes, newEntries, sessionWarmup);
     if(!result) return;
     newEntries.push(result.entry);
     if(result.isRecord && !anyNewRecord){
@@ -2895,7 +3206,7 @@ async function saveCurrentBlocks(){
   });
 
   if(newEntries.length === 0){
-    return { newEntries: [], anyNewRecord: false };
+    return { newEntries: [], anyNewRecord: false, sessionWarmup };
   }
 
   workouts = [...newEntries, ...workouts];
@@ -2914,7 +3225,7 @@ async function saveCurrentBlocks(){
   renderHistory();
   renderOverview();
 
-  return { newEntries, anyNewRecord, recordExerciseName, recordValue, recordUnit };
+  return { newEntries, anyNewRecord, recordExerciseName, recordValue, recordUnit, sessionWarmup };
 }
 
 $('finishDayBtn').addEventListener('click', async ()=>{
@@ -2929,6 +3240,9 @@ $('finishDayBtn').addEventListener('click', async ()=>{
     if(result.newEntries.length === 0 && alreadyDoneCount === 0){
       showToast('Add at least one exercise with sets 🐾');
       return;
+    }
+    if(!result.anyNewRecord){
+      maybeShowWarmupReminder(); // check before the reset, since reset clears the warm-up state for next time
     }
     fullResetLogForm();
     clearDraft();
@@ -3082,8 +3396,14 @@ document.querySelectorAll('#historyModeToggle .toggle-btn').forEach(btn=>{
     document.querySelectorAll('#historyModeToggle .toggle-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     $('historyFilterRow').style.display = (historyMode === 'exercise') ? 'block' : 'none';
+    $('historySearchRow').style.display = (historyMode === 'date') ? 'block' : 'none';
     renderHistory();
   });
+});
+
+$('historySearchInput').addEventListener('input', ()=>{
+  historyDatesShownCount = 7;
+  renderHistory();
 });
 
 function populateHistoryFilter(){
@@ -3232,6 +3552,22 @@ function attachCollapseHandlers(container){
   });
 }
 
+function attachDaySessionCollapseHandlers(container){
+  container.querySelectorAll('.day-session-header').forEach(header=>{
+    header.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      header.closest('.day-session-group').classList.toggle('expanded');
+    });
+  });
+}
+
+// total distinct days ever logged, shown at the end of the Workouts and Month views
+function totalSessionsLine(){
+  const totalDays = new Set(workouts.map(w=>w.date)).size;
+  if(totalDays === 0) return '';
+  return `<div class="history-total-count">🐾 ${totalDays} session${totalDays===1?'':'s'} logged so far</div>`;
+}
+
 function renderHistory(){
   if(historyMode === 'date'){
     renderHistoryByDate();
@@ -3264,28 +3600,55 @@ function renderHistoryByMonth(){
 
   list.innerHTML = months.map(monthKey=>{
     const entries = byMonth[monthKey];
-    const sessionDays = new Set(entries.map(e=>e.date)).size;
+    const byDate = {};
+    entries.forEach(w=>{
+      if(!byDate[w.date]) byDate[w.date] = [];
+      byDate[w.date].push(w);
+    });
+    const datesInMonth = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
+
+    const sessionDays = datesInMonth.length;
     const exCount = new Set(entries.map(e=>e.exercise)).size;
     const volume = calcVolume(entries);
     const reps = calcReps(entries);
     const unitLabel = entries[0].unit || 'kg';
-    const sorted = entries.slice().sort((a,b)=> b.date.localeCompare(a.date));
-    const sessionsHtml = sorted.map(w=>{
-      const setsHtml = w.timeBased
-        ? w.sets.map(s=>`<span class="set-pill">${s.duration}s</span>`).join('')
-        : w.sets.map(s=>`<span class="set-pill">${s.weight}${w.unit||'kg'} × ${s.reps}</span>`).join('');
-      return `
-        <div class="session-sub">
-          <div class="session-top">
+
+    const daySessionsHtml = datesInMonth.map(date=>{
+      const dayEntries = byDate[date];
+      const dayTitle = dayEntries.find(e=>e.title)?.title || '';
+      const dayVolume = calcVolume(dayEntries);
+      const dayReps = calcReps(dayEntries);
+      const dayUnitLabel = dayEntries[0].unit || 'kg';
+      const exercisesHtml = dayEntries.map(w=>{
+        const setsHtml = w.timeBased
+          ? w.sets.map(s=>`<span class="set-pill">${s.duration}s</span>`).join('')
+          : w.sets.map(s=>`<span class="set-pill">${s.weight}${w.unit||'kg'} × ${s.reps}</span>`).join('');
+        return `
+          <div class="session-sub">
             <div class="session-ex">${w.exercise}</div>
-            <div class="session-date">${formatDate(w.date)}</div>
+            <div class="session-sets">${setsHtml}</div>
+            ${w.notes ? `<div class="session-notes">"${w.notes}"</div>` : ''}
+            <button class="session-edit" data-id="${w.id}">✏️ edit</button> <button class="session-del" data-id="${w.id}">delete</button>
           </div>
-          <div class="session-sets">${setsHtml}</div>
-          ${w.notes ? `<div class="session-notes">"${w.notes}"</div>` : ''}
-          <button class="session-edit" data-id="${w.id}">✏️ edit</button> <button class="session-del" data-id="${w.id}">delete</button>
+        `;
+      }).join('');
+      return `
+        <div class="day-session-group">
+          <div class="day-session-header">
+            <div class="day-session-left">
+              <span class="day-session-date">${formatDate(date)}</span>
+              ${dayTitle ? `<span class="date-tag">🏷️ ${dayTitle}</span>` : ''}
+            </div>
+            <div class="day-session-right">
+              <span class="date-volume-mini num">${dayVolume.toLocaleString()}${dayUnitLabel} • ${dayReps.toLocaleString()}r</span>
+              <span class="chevron">▾</span>
+            </div>
+          </div>
+          <div class="day-session-body">${exercisesHtml}</div>
         </div>
       `;
     }).join('');
+
     return `
       <div class="date-group">
         <div class="date-header">
@@ -3298,15 +3661,19 @@ function renderHistoryByMonth(){
             <div class="chevron">▾</div>
           </div>
         </div>
-        <div class="date-body">${sessionsHtml}</div>
+        <div class="date-body">${daySessionsHtml}</div>
       </div>
     `;
-  }).join('');
+  }).join('') + totalSessionsLine();
 
   attachDeleteHandlers(list);
   attachEditHandlers(list);
   attachCollapseHandlers(list);
+  attachDaySessionCollapseHandlers(list);
 }
+
+// how many recent days show before "Show older workouts" is needed, resets on new search
+let historyDatesShownCount = 7;
 
 // Combined date + title view: click a day to expand and see exactly what was done
 function renderHistoryByDate(){
@@ -3316,16 +3683,35 @@ function renderHistoryByDate(){
     return;
   }
 
+  const query = ($('historySearchInput').value || '').trim().toLowerCase();
+
   const byDate = {};
   workouts.forEach(w=>{
     if(!byDate[w.date]) byDate[w.date] = [];
     byDate[w.date].push(w);
   });
-  const dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
+  let dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
 
-  list.innerHTML = dates.map(date=>{
+  if(query){
+    dates = dates.filter(date =>
+      byDate[date].some(w =>
+        w.exercise.toLowerCase().includes(query) ||
+        (w.title||'').toLowerCase().includes(query) ||
+        (w.notes||'').toLowerCase().includes(query)
+      )
+    );
+  }
+
+  if(dates.length === 0){
+    list.innerHTML = `<div class="empty"><div class="big-icon">🐾</div><div class="big">No matches</div>Try a different search 🐾</div>`;
+    return;
+  }
+
+  const shownDates = dates.slice(0, historyDatesShownCount);
+  const hasMore = dates.length > historyDatesShownCount;
+
+  list.innerHTML = shownDates.map(date=>{
     const entries = byDate[date];
-    const exNames = entries.map(e=>e.exercise).join(' • ');
     const dayTitle = entries.find(e=>e.title)?.title || '';
     const volume = calcVolume(entries);
     const reps = calcReps(entries);
@@ -3349,7 +3735,6 @@ function renderHistoryByDate(){
           <div class="date-header-left">
             <div class="date-title">${formatDate(date)}</div>
             ${dayTitle ? `<div class="date-tag">🏷️ ${dayTitle}</div>` : ''}
-            <div class="date-sub">${exNames}</div>
           </div>
           <div class="date-header-right">
             <div class="date-volume-mini num">${volume.toLocaleString()}${unitLabel} • ${reps.toLocaleString()}r</div>
@@ -3361,11 +3746,18 @@ function renderHistoryByDate(){
         </div>
       </div>
     `;
-  }).join('');
+  }).join('') + (hasMore ? `<button class="btn-clear-form" id="historyShowMoreBtn" type="button" style="margin-top:8px;">Show older workouts (${dates.length - historyDatesShownCount} more)</button>` : '') + totalSessionsLine();
 
   attachDeleteHandlers(list);
   attachEditHandlers(list);
   attachCollapseHandlers(list);
+
+  if(hasMore){
+    $('historyShowMoreBtn').addEventListener('click', ()=>{
+      historyDatesShownCount += 7;
+      renderHistoryByDate();
+    });
+  }
 }
 
 function renderHistoryByExercise(){
@@ -3492,6 +3884,88 @@ function categoryForExerciseName(name){
   return match ? match.category : 'Other';
 }
 
+// a curated list of relatable weights, heaviest first, to turn a raw kg total into a fun fact
+const FUN_COMPARISONS = [
+  { name: 'blue whales', weightKg: 150000, emoji: '🐋' },
+  { name: 'elephants', weightKg: 6000, emoji: '🐘' },
+  { name: 'giraffes', weightKg: 1200, emoji: '🦒' },
+  { name: 'cows', weightKg: 700, emoji: '🐄' },
+  { name: 'grand pianos', weightKg: 500, emoji: '🎹' },
+  { name: 'polar bears', weightKg: 450, emoji: '🐻‍❄️' },
+  { name: 'fridges', weightKg: 100, emoji: '🧊' },
+  { name: 'adult humans', weightKg: 70, emoji: '🧍' },
+  { name: 'house cats', weightKg: 4.5, emoji: '🐱' },
+];
+
+function pickFunComparison(totalKg){
+  for(const c of FUN_COMPARISONS){
+    if(totalKg / c.weightKg >= 1) return c;
+  }
+  return FUN_COMPARISONS[FUN_COMPARISONS.length - 1];
+}
+
+function renderFunComparison(){
+  const card = $('funComparisonCard');
+  const total = calcVolume(workouts); // all-time, every exercise
+  if(total === 0){
+    card.style.display = 'none';
+    return;
+  }
+  const comp = pickFunComparison(total);
+  const ratio = total / comp.weightKg;
+  const ratioDisplay = ratio >= 10 ? Math.round(ratio).toLocaleString() : ratio.toFixed(1);
+  $('funComparisonText').innerHTML = `You've lifted <span class="num">${total.toLocaleString()}${unit}</span> total, all-time, that's about <strong>${ratioDisplay} ${comp.emoji} ${comp.name}</strong>!`;
+  card.style.display = 'block';
+}
+
+// GitHub-style rolling year of training activity, one cell per day, shaded by that day's volume
+function renderYearHeatmap(){
+  const grid = $('yearHeatmapGrid');
+  const today = new Date();
+  today.setHours(0,0,0,0);
+
+  const volByDate = {};
+  workouts.forEach(w=>{
+    volByDate[w.date] = (volByDate[w.date] || 0) + calcVolume([w]);
+  });
+  const maxVol = Math.max(...Object.values(volByDate), 1);
+
+  // grid runs 53 weeks back, aligned to full Sun-Sat columns
+  const endDate = new Date(today);
+  const startDate = new Date(today);
+  startDate.setDate(startDate.getDate() - 370);
+  startDate.setDate(startDate.getDate() - startDate.getDay()); // snap back to the preceding Sunday
+
+  const weeks = [];
+  const cursor = new Date(startDate);
+  while(cursor <= endDate){
+    const week = [];
+    for(let i=0;i<7;i++){
+      week.push(new Date(cursor));
+      cursor.setDate(cursor.getDate()+1);
+    }
+    weeks.push(week);
+  }
+
+  let trainedDayCount = 0;
+  grid.innerHTML = weeks.map(week=>{
+    const cellsHtml = week.map(d=>{
+      const dateStr = toDateStr(d);
+      const vol = volByDate[dateStr] || 0;
+      if(vol > 0) trainedDayCount++;
+      let level = 0;
+      if(vol > 0) level = 1;
+      if(vol > maxVol*0.33) level = 2;
+      if(vol > maxVol*0.66) level = 3;
+      const isFuture = d > today;
+      return `<div class="heatmap-cell${level?' level-'+level:''}${isFuture?' future':''}" title="${dateStr}${vol?': '+vol+unit:''}"></div>`;
+    }).join('');
+    return `<div class="heatmap-col">${cellsHtml}</div>`;
+  }).join('');
+
+  $('yearHeatmapTitle').textContent = `🗓️ Year in training (${trainedDayCount} days)`;
+}
+
 function renderCategoryBreakdown(entries){
   const card = $('breakdownCard');
   if(entries.length === 0){
@@ -3532,6 +4006,7 @@ function renderProgressOverview(){
   const prevEntries = workouts.filter(w=> w.date >= prevRange.start && w.date <= prevRange.end);
 
   renderStreak();
+  renderFunComparison();
   renderCategoryBreakdown(curEntries);
 
   const curVolume = calcVolume(curEntries), prevVolume = calcVolume(prevEntries);
@@ -3553,31 +4028,8 @@ function renderProgressOverview(){
     compareEl.innerHTML = `This ${periodWord}: <span class="num">${curVolume.toLocaleString()}${unitLabel}</span> vs last ${periodWord}: <span class="num">${prevVolume.toLocaleString()}${unitLabel}</span> (${volDiff>=0?'+':''}${volDiff.toLocaleString()}${unitLabel} ${icon}) • ${curSessions} vs ${prevSessions} sessions`;
   }
 
-  // sessions-this-month calendar: any workout day counts, across every exercise
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const daysInMonth = new Date(year, month+1, 0).getDate();
-  const monthTrainedDays = new Set(
-    workouts
-      .filter(w=>{
-        const d = new Date(w.date+'T00:00:00');
-        return d.getFullYear()===year && d.getMonth()===month;
-      })
-      .map(w=> new Date(w.date+'T00:00:00').getDate())
-  );
-  $('poCalendarTitle').textContent = `🗓️ Sessions this month (${monthTrainedDays.size})`;
-  const poGrid = $('poCalendarGrid');
-  poGrid.innerHTML = '';
-  const todayNum = now.getDate();
-  for(let d=1; d<=daysInMonth; d++){
-    const cell = document.createElement('div');
-    cell.className = 'day-cell';
-    if(monthTrainedDays.has(d)) cell.classList.add('trained');
-    if(d === todayNum) cell.classList.add('today');
-    cell.title = `${d} ${now.toLocaleDateString(undefined,{month:'short'})}`;
-    poGrid.appendChild(cell);
-  }
+  // year-long activity heatmap: any workout day counts, across every exercise
+  renderYearHeatmap();
 
   // most improved: compare this period's best vs last period's best, per exercise
   const exNames = [...new Set([...curEntries, ...prevEntries].map(w=>w.exercise))];
@@ -3908,6 +4360,171 @@ function loadPlanIntoLogForm(plan){
   scheduleDraftSave();
 }
 
+// how often and how recently a preset has actually been used, matched by workout title
+function getPlanUsageStats(plan){
+  const matching = workouts.filter(w => w.title && w.title.toLowerCase() === plan.name.toLowerCase());
+  if(matching.length === 0) return { lastUsed: null, timesUsed: 0 };
+  const dates = [...new Set(matching.map(w=>w.date))].sort();
+  return { lastUsed: dates[dates.length-1], timesUsed: dates.length };
+}
+
+// the category most of a preset's exercises belong to, shown as a quick tag
+function getPlanDominantCategory(plan){
+  const counts = {};
+  plan.exercises.forEach(e=>{
+    const cat = categoryForExerciseName(e.name);
+    counts[cat] = (counts[cat] || 0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a,b)=> b[1]-a[1]);
+  return sorted.length ? sorted[0][0] : null;
+}
+
+function startPlanById(id){
+  const plan = plans.find(p=>p.id === id);
+  if(!plan) return;
+  loadPlanIntoLogForm(plan);
+  $('titleInput').value = plan.name;
+  document.querySelector('.tab[data-view="log"]').click();
+  showToast(`Loaded "${plan.name}" 🐾`);
+}
+
+// nudges toward whichever preset has gone the longest without being used
+let planSuggestionShownThisSession = false;
+
+// shows once per session, as a dismissible popup, rather than a permanent banner
+function maybeShowPlanSuggestionPopup(){
+  if(planSuggestionShownThisSession) return;
+  // copies are excluded — a preset you just duplicated on purpose doesn't need a
+  // "give it a try" nudge the moment it exists
+  const eligible = plans.filter(p => !/\(copy(\s\d+)?\)$/i.test(p.name.trim()));
+  if(eligible.length < 2) return;
+
+  const withUsage = eligible.map(p => ({ plan: p, ...getPlanUsageStats(p) }));
+  withUsage.sort((a,b)=>{
+    if(!a.lastUsed && !b.lastUsed) return 0;
+    if(!a.lastUsed) return -1;
+    if(!b.lastUsed) return 1;
+    return a.lastUsed.localeCompare(b.lastUsed);
+  });
+  const top = withUsage[0];
+
+  planSuggestionShownThisSession = true;
+  $('planSuggestionPopupText').textContent = top.lastUsed
+    ? `Haven't done "${top.plan.name}" since ${formatDate(top.lastUsed)} 🐾`
+    : `Haven't tried "${top.plan.name}" yet, give it a go? 🐾`;
+  $('planSuggestionPopupStartBtn').dataset.id = top.plan.id;
+  $('planSuggestionOverlay').classList.add('show');
+}
+
+$('planSuggestionPopupStartBtn').addEventListener('click', ()=>{
+  $('planSuggestionOverlay').classList.remove('show');
+  startPlanById($('planSuggestionPopupStartBtn').dataset.id);
+});
+$('planSuggestionPopupDismissBtn').addEventListener('click', ()=>{
+  $('planSuggestionOverlay').classList.remove('show');
+});
+$('planSuggestionOverlay').addEventListener('click', (e)=>{
+  if(e.target.id === 'planSuggestionOverlay') $('planSuggestionOverlay').classList.remove('show');
+});
+
+// loads a saved plan into the Plan tab's builder (not the Log tab), so it can be
+// tweaked and re-saved under the same name to update it in place
+function loadPlanIntoBuilder(plan){
+  $('planNameInput').value = plan.name;
+  $('planBlocksContainer').innerHTML = '';
+  plan.exercises.forEach(pe=>{
+    const block = createExerciseBlock();
+    $('planBlocksContainer').appendChild(block);
+    if(pe.timeBased) block.querySelector('.timebased-checkbox').checked = true;
+    block.querySelector('.exercise-input').value = pe.name;
+    (pe.targetSets && pe.targetSets.length ? pe.targetSets : [{}]).forEach(s=>{
+      if(pe.timeBased) addSetRowToBlock(block, s.duration != null ? s.duration : '');
+      else addSetRowToBlock(block, s.weight != null ? s.weight : '', s.reps != null ? s.reps : '');
+    });
+    updateCategoryRowVisibilityForBlock(block);
+  });
+  if($('planBlocksContainer').children.length === 0){
+    addExerciseBlock($('planBlocksContainer'));
+  }
+  updateBlockNumbers($('planBlocksContainer'));
+  try{ $('planNameInput').scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e){}
+}
+
+// builds a link that carries a preset's data in the URL itself, so sharing it
+// works via any messaging app with no account or server involved
+function buildShareUrlForPlan(plan){
+  const payload = JSON.stringify({ name: plan.name, exercises: plan.exercises });
+  const encoded = btoa(unescape(encodeURIComponent(payload)));
+  const url = new URL(location.href);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('plan', encoded);
+  return url.toString();
+}
+
+async function sharePlan(id){
+  const plan = plans.find(p=>p.id === id);
+  if(!plan) return;
+  const url = buildShareUrlForPlan(plan);
+  const text = `🐾 Check out my "${plan.name}" workout on Meow Gains!`;
+  if(navigator.share){
+    try{ await navigator.share({ title: 'Meow Gains preset', text, url }); return; }catch(e){ return; }
+  }
+  try{
+    await navigator.clipboard.writeText(url);
+    showToast('Link copied! Paste it anywhere 💌');
+  }catch(e){
+    showToast('Could not share automatically, copy this: ' + url);
+  }
+}
+
+// on load, checks whether the URL is carrying a shared preset and offers to import it
+async function checkForSharedPlanImport(){
+  const params = new URLSearchParams(location.search);
+  const encoded = params.get('plan');
+  if(!encoded) return;
+
+  try{
+    const payload = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    if(payload && payload.name && Array.isArray(payload.exercises)){
+      const count = payload.exercises.length;
+      if(confirm(`Import the preset "${payload.name}" (${count} exercise${count===1?'':'s'}) shared with you?`)){
+        upsertPlan(payload.name, payload.exercises);
+        await savePlans();
+        renderPlanList();
+        renderTitleSuggestions();
+        showToast(`"${payload.name}" added to your presets! 🎀`);
+        const planTab = document.querySelector('.tab[data-view="plan"]');
+        if(planTab) planTab.click();
+      }
+    }
+  }catch(e){
+    // malformed or corrupted link — quietly ignore rather than error out on load
+  }
+  history.replaceState(null, '', location.pathname);
+}
+
+async function duplicatePlan(id){
+  const plan = plans.find(p=>p.id === id);
+  if(!plan) return;
+  let newName = plan.name + ' (copy)';
+  let counter = 2;
+  while(plans.some(p=>p.name.toLowerCase() === newName.toLowerCase())){
+    newName = plan.name + ` (copy ${counter})`;
+    counter++;
+  }
+  const newPlan = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name: newName,
+    exercises: JSON.parse(JSON.stringify(plan.exercises))
+  };
+  plans.unshift(newPlan);
+  await savePlans();
+  renderPlanList();
+  renderTitleSuggestions();
+  showToast(`Duplicated as "${newName}" 🎀`);
+}
+
 function renderPlanList(){
   const listEl = $('planList');
   if(plans.length === 0){
@@ -3915,28 +4532,54 @@ function renderPlanList(){
     return;
   }
   listEl.innerHTML = plans.map(p=>{
-    const exNames = p.exercises.map(e=>e.name).join(' • ');
+    const usage = getPlanUsageStats(p);
+    const cat = getPlanDominantCategory(p);
+    const usageText = usage.timesUsed === 0
+      ? 'never used yet'
+      : `used ${usage.timesUsed}× · last ${formatDate(usage.lastUsed)}`;
     return `
       <div class="plan-card">
-        <div class="plan-card-name">${p.name}</div>
-        <div class="plan-card-exercises">${p.exercises.length} exercise${p.exercises.length===1?'':'s'}: ${exNames}</div>
+        <div class="plan-card-name">
+          <span>⭐ ${p.name}</span>
+          <span class="chevron">▾</span>
+        </div>
+        <div class="plan-card-meta">
+          ${cat ? `<span class="plan-tag">${cat}</span>` : ''}
+          <span class="plan-usage">${usageText}</span>
+        </div>
         <div class="plan-card-actions">
           <button class="plan-start-btn" data-id="${p.id}" type="button">▶️ Start</button>
+          <button class="plan-edit-btn" data-id="${p.id}" type="button">✏️ Edit</button>
+          <button class="plan-duplicate-btn" data-id="${p.id}" type="button">📋 Copy</button>
+          <button class="plan-share-btn" data-id="${p.id}" type="button">📤 Share</button>
           <button class="plan-delete-btn" data-id="${p.id}" type="button">🗑️ Delete</button>
         </div>
       </div>
     `;
   }).join('');
 
+  listEl.querySelectorAll('.plan-card-name').forEach(nameEl=>{
+    nameEl.addEventListener('click', ()=>{
+      nameEl.closest('.plan-card').classList.toggle('expanded');
+    });
+  });
+
   listEl.querySelectorAll('.plan-start-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> startPlanById(btn.dataset.id));
+  });
+  listEl.querySelectorAll('.plan-edit-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const plan = plans.find(p=>p.id === btn.dataset.id);
       if(!plan) return;
-      loadPlanIntoLogForm(plan);
-      $('titleInput').value = plan.name;
-      document.querySelector('.tab[data-view="log"]').click();
-      showToast(`Loaded "${plan.name}" 🐾`);
+      loadPlanIntoBuilder(plan);
+      showToast(`Editing "${plan.name}", change it below, then hit Save preset 🎀`);
     });
+  });
+  listEl.querySelectorAll('.plan-duplicate-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> duplicatePlan(btn.dataset.id));
+  });
+  listEl.querySelectorAll('.plan-share-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=> sharePlan(btn.dataset.id));
   });
   listEl.querySelectorAll('.plan-delete-btn').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
@@ -4068,6 +4711,7 @@ function gatherLogDraft(){
     date: $('dateInput').value,
     title: $('titleInput').value,
     notes: $('notesInput').value,
+    warmup: $('warmupInput').value,
     blocks
   };
 }
@@ -4103,6 +4747,7 @@ function restoreDraftIfAny(){
   if(draft.date) $('dateInput').value = draft.date;
   if(draft.title) $('titleInput').value = draft.title;
   if(draft.notes) $('notesInput').value = draft.notes;
+  if(draft.warmup) $('warmupInput').value = draft.warmup;
 
   $('exerciseBlocksContainer').innerHTML = '';
   if(draft.blocks && draft.blocks.length){
@@ -4133,6 +4778,7 @@ $('exerciseBlocksContainer').addEventListener('change', scheduleDraftSave);
 $('dateInput').addEventListener('input', scheduleDraftSave);
 $('titleInput').addEventListener('input', scheduleDraftSave);
 $('notesInput').addEventListener('input', scheduleDraftSave);
+$('warmupInput').addEventListener('input', scheduleDraftSave);
 
 // ---------- INIT ----------
 (async function init(){
@@ -4150,6 +4796,7 @@ $('notesInput').addEventListener('input', scheduleDraftSave);
   renderOverview();
   renderProgressExerciseList();
   maybeShowLogKitty();
+  await checkForSharedPlanImport();
 
   if('serviceWorker' in navigator){
     try{ await navigator.serviceWorker.register('sw.js'); }catch(e){}
