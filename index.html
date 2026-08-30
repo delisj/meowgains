@@ -179,7 +179,7 @@
     font-weight:700;
   }
 
-  input[type=text],input[type=date],input[type=number],select{
+  input[type=text],input[type=date],input[type=number],select,textarea{
     width:100%;
     background:var(--pink-pale);
     border:2px solid var(--line);
@@ -188,6 +188,10 @@
     border-radius:14px;
     font-size:16px;
     margin-bottom:14px;
+  }
+  textarea{
+    font-family:inherit;
+    resize:vertical;
   }
   input[type=date]{
     min-height:44px;
@@ -220,7 +224,7 @@
   .plan-card:last-child{ margin-bottom:0; }
   .plan-card-name{
     font-weight:800;
-    font-size:14.5px;
+    font-size:13px;
     color:var(--pink-deep);
     margin-bottom:4px;
     cursor:pointer;
@@ -237,11 +241,6 @@
   }
   .plan-card.expanded .plan-card-name .chevron{
     transform:rotate(180deg);
-  }
-  .plan-card-exercises{
-    font-size:12px;
-    color:var(--ink-dim);
-    margin-bottom:10px;
   }
   .plan-card-meta{
     display:flex;
@@ -803,6 +802,16 @@
     color:var(--pink-deep);
     margin-bottom:8px;
   }
+  .collapsible-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    margin-bottom:0;
+  }
+  .collapsible-title.expanded .chevron{
+    transform:rotate(180deg);
+  }
   .date-sub{
     font-size:12px;
     color:var(--ink-dim);
@@ -960,44 +969,6 @@
   }
   .fun-comparison-text strong{
     color:var(--pink-deep);
-  }
-  .heatmap-scroll{
-    overflow-x:auto;
-    padding-bottom:4px;
-  }
-  .heatmap-grid{
-    display:flex;
-    gap:3px;
-    width:max-content;
-  }
-  .heatmap-col{
-    display:flex;
-    flex-direction:column;
-    gap:3px;
-  }
-  .heatmap-cell{
-    width:9px;
-    height:9px;
-    border-radius:2px;
-    background:var(--pink-pale);
-    border:1px solid var(--line);
-    display:inline-block;
-  }
-  .heatmap-cell.level-1{ background:var(--pink); opacity:0.35; border-color:transparent; }
-  .heatmap-cell.level-2{ background:var(--pink); opacity:0.7; border-color:transparent; }
-  .heatmap-cell.level-3{ background:var(--pink-deep); opacity:1; border-color:transparent; }
-  .heatmap-cell.future{ opacity:0.15 !important; }
-  .heatmap-legend{
-    display:flex;
-    align-items:center;
-    gap:4px;
-    font-size:10.5px;
-    color:var(--ink-dim);
-    margin-top:8px;
-  }
-  .heatmap-legend .heatmap-cell{
-    width:9px;
-    height:9px;
   }
   .day-grid{
     display:grid;
@@ -1638,6 +1609,12 @@
     </div>
     <div class="filter-row" id="historySearchRow">
       <input type="text" id="historySearchInput" placeholder="🐾 Search exercises, titles, or notes...">
+      <select id="historyRangeFilter">
+        <option value="all">All time</option>
+        <option value="week">This week</option>
+        <option value="month">This month</option>
+        <option value="year">This year</option>
+      </select>
     </div>
     <div class="filter-row" id="historyFilterRow" style="display:none;">
       <select id="historyFilter">
@@ -1677,6 +1654,7 @@
         <div class="group-toggle" id="progressOverviewRangeToggle" style="margin-bottom:12px;">
           <button class="toggle-btn active" data-range="week" type="button">Week vs week</button>
           <button class="toggle-btn" data-range="month" type="button">Month vs month</button>
+          <button class="toggle-btn" data-range="year" type="button">Year vs year</button>
         </div>
         <div class="stat-grid stat-grid-3">
           <div class="stat"><div class="v num" id="poVolume">-</div><div class="l">Volume</div></div>
@@ -1687,14 +1665,11 @@
       </div>
 
       <div class="card" id="breakdownCard" style="display:none;">
-        <div class="section-title">💪 Muscle breakdown</div>
-        <div id="categoryBreakdown"></div>
-      </div>
-
-      <div class="card">
-        <div class="section-title" id="yearHeatmapTitle">🗓️ Year in training</div>
-        <div class="heatmap-scroll"><div class="heatmap-grid" id="yearHeatmapGrid"></div></div>
-        <div class="heatmap-legend">less <span class="heatmap-cell"></span><span class="heatmap-cell level-1"></span><span class="heatmap-cell level-2"></span><span class="heatmap-cell level-3"></span> more</div>
+        <div class="section-title collapsible-title" id="breakdownToggle">
+          <span>💪 Muscle breakdown</span>
+          <span class="chevron">▾</span>
+        </div>
+        <div id="categoryBreakdown" style="display:none;"></div>
       </div>
 
       <div class="card">
@@ -1810,6 +1785,28 @@
       <button class="btn btn-ghost" id="exportCsvBtn" type="button" style="display:block; width:100%;">📊 Download as CSV</button>
     </div>
 
+    <div class="settings-section">
+      <div class="settings-section-title">Feedback</div>
+      <div style="font-size:11.5px; color:var(--ink-dim); margin-bottom:10px;">Found a bug, or have an idea to make this better? Let me know 🐾</div>
+
+      <label>What's working well?</label>
+      <textarea id="fbWorking" rows="2" placeholder="..."></textarea>
+
+      <label>What's missing?</label>
+      <textarea id="fbMissing" rows="2" placeholder="..."></textarea>
+
+      <label>What's buggy?</label>
+      <textarea id="fbBuggy" rows="2" placeholder="..."></textarea>
+
+      <label>UX/UI improvements?</label>
+      <textarea id="fbUx" rows="2" placeholder="..."></textarea>
+
+      <label>Other</label>
+      <textarea id="fbOther" rows="2" placeholder="anything else you want to say..."></textarea>
+
+      <button class="btn btn-primary" id="sendFeedbackBtn" type="button">💌 Send feedback</button>
+    </div>
+
     <div class="settings-section danger-zone">
       <div class="settings-section-title">Danger Zone</div>
       <button class="btn-danger" id="clearAllDataBtn" type="button">🗑️ Clear all data</button>
@@ -1824,6 +1821,18 @@
     <div class="pr-title" style="font-size:16px;">🔥 Quick heads up!</div>
     <div class="pr-sub" style="margin-bottom:16px;">Warming up really helps avoid injuries, don't skip it if you can help it 🐾</div>
     <button class="btn btn-primary" id="warmupReminderOkBtn" type="button">Got it!</button>
+  </div>
+</div>
+
+<div class="pr-overlay" id="welcomeOverlay">
+  <div class="pr-card" style="max-width:320px;">
+    <div class="pr-title" style="font-size:18px;">🐾 Welcome to Meow Gains!</div>
+    <div class="pr-sub" style="margin-bottom:16px; text-align:left;">
+      Your cute little gym diary, for logging workouts, saving routines as presets, and watching your progress over time.<br><br>
+      Everything stays on your own phone. No account, no cloud, nobody but you sees your data.<br><br>
+      Let's get lifting! 💪
+    </div>
+    <button class="btn btn-primary" id="welcomeOkBtn" type="button">Let's go! 🎀</button>
   </div>
 </div>
 
@@ -2163,6 +2172,13 @@ function renderOwnKittyThumbs(){
   });
 }
 
+$('breakdownToggle').addEventListener('click', ()=>{
+  const toggle = $('breakdownToggle');
+  const body = $('categoryBreakdown');
+  const isOpen = toggle.classList.toggle('expanded');
+  body.style.display = isOpen ? 'block' : 'none';
+});
+
 $('addOwnKittyBtn').addEventListener('click', ()=>{
   $('ownKittyFileInput').click();
 });
@@ -2198,6 +2214,47 @@ $('ownKittyFileInput').addEventListener('change', (e)=>{
   };
   reader.readAsDataURL(file);
   e.target.value = '';
+});
+
+$('welcomeOkBtn').addEventListener('click', ()=>{
+  $('welcomeOverlay').classList.remove('show');
+  try{ localStorage.setItem('meowgains_hasSeenIntro', 'true'); }catch(e){}
+});
+
+$('sendFeedbackBtn').addEventListener('click', async ()=>{
+  const working = $('fbWorking').value.trim();
+  const missing = $('fbMissing').value.trim();
+  const buggy = $('fbBuggy').value.trim();
+  const ux = $('fbUx').value.trim();
+  const other = $('fbOther').value.trim();
+
+  if(!working && !missing && !buggy && !ux && !other){
+    showToast('Fill in at least one field first 🐾');
+    return;
+  }
+
+  const formUrl = 'https://docs.google.com/forms/d/e/1FAIpQLSd0a1jfSoE-mv4166i8MJewI_bIC0-wsyEuCSbRdaDAcaF2rw/formResponse';
+  const body = new URLSearchParams({
+    'entry.925488447': working,
+    'entry.1351262553': missing,
+    'entry.1578669391': buggy,
+    'entry.1968051017': ux,
+    'entry.1909296729': other
+  });
+
+  try{
+    // no-cors means the response itself is unreadable, but the submission still
+    // goes through as long as the request reaches Google, which it reliably does
+    await fetch(formUrl, { method: 'POST', mode: 'no-cors', body });
+    $('fbWorking').value = '';
+    $('fbMissing').value = '';
+    $('fbBuggy').value = '';
+    $('fbUx').value = '';
+    $('fbOther').value = '';
+    showToast('Feedback sent, thank you! 💌');
+  }catch(e){
+    showToast("Couldn't send that, check your connection and try again 🐾");
+  }
 });
 
 $('clearAllDataBtn').addEventListener('click', ()=>{
@@ -2456,9 +2513,11 @@ async function saveTitles(){
 }
 
 function renderTitleSuggestions(){
-  const planNames = plans.map(p=>p.name);
-  const allNames = [...new Set([...titles, ...planNames])];
-  $('titleSuggestions').innerHTML = allNames.map(t=>`<option value="${t}">`).join('');
+  // presets already show up starred in the custom dropdown below the field —
+  // keeping them here too would show every preset twice (once starred, once plain)
+  const planNames = new Set(plans.map(p=>p.name.toLowerCase()));
+  const freeformTitles = titles.filter(t => !planNames.has(t.toLowerCase()));
+  $('titleSuggestions').innerHTML = freeformTitles.map(t=>`<option value="${t}">`).join('');
 }
 
 // total weight lifted across a set of workout entries: sum(weight × reps) for every set
@@ -2721,7 +2780,9 @@ function renderExerciseSearchResults(block){
 
   const all = getAllKnownExercises();
   const matches = query ? all.filter(e => e.display.toLowerCase().includes(query)) : all;
-  const shown = matches.slice(0, 20);
+  // only cap results for an active search — when just browsing (empty query),
+  // show everything so every category gets a chance to appear
+  const shown = query ? matches.slice(0, 20) : matches;
 
   if(shown.length === 0){
     resultsEl.innerHTML = query
@@ -2741,7 +2802,6 @@ function renderExerciseSearchResults(block){
     const items = byCat[cat].map(e=>`
       <div class="exercise-search-result" data-name="${e.display}">
         <span>${e.display}</span>
-        <button class="exercise-search-result-remove" data-orig="${e.original}" type="button">remove</button>
       </div>
     `).join('');
     return `<div class="exercise-search-group-label">${cat}</div>${items}`;
@@ -2750,27 +2810,8 @@ function renderExerciseSearchResults(block){
   resultsEl.classList.add('show');
 
   resultsEl.querySelectorAll('.exercise-search-result').forEach(row=>{
-    row.addEventListener('click', (e)=>{
-      if(e.target.closest('.exercise-search-result-remove')) return;
+    row.addEventListener('click', ()=>{
       selectExerciseForBlock(block, row.dataset.name);
-    });
-  });
-
-  resultsEl.querySelectorAll('.exercise-search-result-remove').forEach(btn=>{
-    btn.addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      const original = btn.dataset.orig;
-      const displayName = exerciseRenames[original] || original;
-      if(!confirm(`Remove "${displayName}" from the picker? Sessions already logged for it stay in your history.`)) return;
-      hiddenExercises.push(original);
-      customExercises = customExercises.filter(c=>c.name !== original);
-      exercises = exercises.filter(e=>e !== original && e !== displayName);
-      await saveHiddenExercises();
-      await saveCustomExercises();
-      await saveExercises();
-      renderExerciseSearchResults(block);
-      renderSuggestions();
-      showToast('Removed from the picker');
     });
   });
 }
@@ -3041,7 +3082,7 @@ function collapseBlockForSpace(block){
   const setCount = block.querySelectorAll('.sets-container .set-row').length;
   block.classList.add('collapsed');
   block.querySelector('.block-summary').innerHTML =
-    `<span>${name} — ${setCount} set${setCount===1?'':'s'}</span><span style="font-size:11px; color:var(--pink-deep); text-decoration:underline;">▾ tap to expand</span>`;
+    `<span>${name}, ${setCount} set${setCount===1?'':'s'}</span><span style="font-size:11px; color:var(--pink-deep); text-decoration:underline;">▾ tap to expand</span>`;
 }
 
 $('addExerciseBtn').addEventListener('click', ()=>{
@@ -3310,15 +3351,19 @@ $('prOverlay').addEventListener('click', (e)=>{
 $('prShareBtn').addEventListener('click', async ()=>{
   const text = `🐾 New record on ${$('prExercise').textContent}: ${$('prWeight').textContent}! Logged with Meow Gains 💪`;
   if(navigator.share){
-    try{ await navigator.share({ text }); }catch(e){}
-  } else {
     try{
-      await navigator.clipboard.writeText(text);
-      showToast('Copied! Paste it anywhere 💌');
+      await navigator.share({ text });
+      return;
     }catch(e){
-      showToast(text);
+      if(e.name === 'AbortError') return;
     }
   }
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast('Copied! Paste it anywhere 💌');
+  }catch(e){
+    showToast(text);
+    }
 });
 
 // ---------- HISTORY ----------
@@ -3350,6 +3395,13 @@ function getMonthRange(){
   const now = new Date();
   const first = new Date(now.getFullYear(), now.getMonth(), 1);
   const last = new Date(now.getFullYear(), now.getMonth()+1, 0);
+  return { start: toDateStr(first), end: toDateStr(last) };
+}
+
+function getYearRange(){
+  const now = new Date();
+  const first = new Date(now.getFullYear(), 0, 1);
+  const last = new Date(now.getFullYear(), 11, 31);
   return { start: toDateStr(first), end: toDateStr(last) };
 }
 
@@ -3402,6 +3454,10 @@ document.querySelectorAll('#historyModeToggle .toggle-btn').forEach(btn=>{
 });
 
 $('historySearchInput').addEventListener('input', ()=>{
+  historyDatesShownCount = 7;
+  renderHistory();
+});
+$('historyRangeFilter').addEventListener('change', ()=>{
   historyDatesShownCount = 7;
   renderHistory();
 });
@@ -3684,6 +3740,7 @@ function renderHistoryByDate(){
   }
 
   const query = ($('historySearchInput').value || '').trim().toLowerCase();
+  const rangeFilter = $('historyRangeFilter').value;
 
   const byDate = {};
   workouts.forEach(w=>{
@@ -3691,6 +3748,11 @@ function renderHistoryByDate(){
     byDate[w.date].push(w);
   });
   let dates = Object.keys(byDate).sort((a,b)=> b.localeCompare(a));
+
+  if(rangeFilter !== 'all'){
+    const range = rangeFilter === 'week' ? getWeekRange() : rangeFilter === 'month' ? getMonthRange() : getYearRange();
+    dates = dates.filter(date => date >= range.start && date <= range.end);
+  }
 
   if(query){
     dates = dates.filter(date =>
@@ -3834,6 +3896,12 @@ function getPreviousRange(range, rangeType){
     const end = new Date(range.end+'T00:00:00'); end.setDate(end.getDate()-7);
     return { start: toDateStr(start), end: toDateStr(end) };
   }
+  if(rangeType === 'year'){
+    const d = new Date(range.start+'T00:00:00'); d.setFullYear(d.getFullYear()-1);
+    const first = new Date(d.getFullYear(), 0, 1);
+    const last = new Date(d.getFullYear(), 11, 31);
+    return { start: toDateStr(first), end: toDateStr(last) };
+  }
   const d = new Date(range.start+'T00:00:00'); d.setMonth(d.getMonth()-1);
   const first = new Date(d.getFullYear(), d.getMonth(), 1);
   const last = new Date(d.getFullYear(), d.getMonth()+1, 0);
@@ -3918,54 +3986,6 @@ function renderFunComparison(){
   card.style.display = 'block';
 }
 
-// GitHub-style rolling year of training activity, one cell per day, shaded by that day's volume
-function renderYearHeatmap(){
-  const grid = $('yearHeatmapGrid');
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const volByDate = {};
-  workouts.forEach(w=>{
-    volByDate[w.date] = (volByDate[w.date] || 0) + calcVolume([w]);
-  });
-  const maxVol = Math.max(...Object.values(volByDate), 1);
-
-  // grid runs 53 weeks back, aligned to full Sun-Sat columns
-  const endDate = new Date(today);
-  const startDate = new Date(today);
-  startDate.setDate(startDate.getDate() - 370);
-  startDate.setDate(startDate.getDate() - startDate.getDay()); // snap back to the preceding Sunday
-
-  const weeks = [];
-  const cursor = new Date(startDate);
-  while(cursor <= endDate){
-    const week = [];
-    for(let i=0;i<7;i++){
-      week.push(new Date(cursor));
-      cursor.setDate(cursor.getDate()+1);
-    }
-    weeks.push(week);
-  }
-
-  let trainedDayCount = 0;
-  grid.innerHTML = weeks.map(week=>{
-    const cellsHtml = week.map(d=>{
-      const dateStr = toDateStr(d);
-      const vol = volByDate[dateStr] || 0;
-      if(vol > 0) trainedDayCount++;
-      let level = 0;
-      if(vol > 0) level = 1;
-      if(vol > maxVol*0.33) level = 2;
-      if(vol > maxVol*0.66) level = 3;
-      const isFuture = d > today;
-      return `<div class="heatmap-cell${level?' level-'+level:''}${isFuture?' future':''}" title="${dateStr}${vol?': '+vol+unit:''}"></div>`;
-    }).join('');
-    return `<div class="heatmap-col">${cellsHtml}</div>`;
-  }).join('');
-
-  $('yearHeatmapTitle').textContent = `🗓️ Year in training (${trainedDayCount} days)`;
-}
-
 function renderCategoryBreakdown(entries){
   const card = $('breakdownCard');
   if(entries.length === 0){
@@ -3997,9 +4017,8 @@ function renderCategoryBreakdown(entries){
 }
 
 function renderProgressOverview(){
-  const isWeek = progressOverviewRange === 'week';
-  const periodWord = isWeek ? 'week' : 'month';
-  const curRange = isWeek ? getWeekRange() : getMonthRange();
+  const periodWord = progressOverviewRange === 'week' ? 'week' : progressOverviewRange === 'year' ? 'year' : 'month';
+  const curRange = progressOverviewRange === 'week' ? getWeekRange() : progressOverviewRange === 'year' ? getYearRange() : getMonthRange();
   const prevRange = getPreviousRange(curRange, progressOverviewRange);
 
   const curEntries = workouts.filter(w=> w.date >= curRange.start && w.date <= curRange.end);
@@ -4027,9 +4046,6 @@ function renderProgressOverview(){
     const icon = volDiff > 0 ? '↑' : volDiff < 0 ? '↓' : '➡';
     compareEl.innerHTML = `This ${periodWord}: <span class="num">${curVolume.toLocaleString()}${unitLabel}</span> vs last ${periodWord}: <span class="num">${prevVolume.toLocaleString()}${unitLabel}</span> (${volDiff>=0?'+':''}${volDiff.toLocaleString()}${unitLabel} ${icon}) • ${curSessions} vs ${prevSessions} sessions`;
   }
-
-  // year-long activity heatmap: any workout day counts, across every exercise
-  renderYearHeatmap();
 
   // most improved: compare this period's best vs last period's best, per exercise
   const exNames = [...new Set([...curEntries, ...prevEntries].map(w=>w.exercise))];
@@ -4453,7 +4469,17 @@ function loadPlanIntoBuilder(plan){
 // builds a link that carries a preset's data in the URL itself, so sharing it
 // works via any messaging app with no account or server involved
 function buildShareUrlForPlan(plan){
-  const payload = JSON.stringify({ name: plan.name, exercises: plan.exercises });
+  // compact key names to keep the link as short as possible — full JSON key
+  // names would roughly double the URL length for no real benefit
+  const compact = {
+    n: plan.name,
+    e: plan.exercises.map(ex => ({
+      n: ex.name,
+      t: ex.timeBased ? 1 : 0,
+      s: ex.targetSets.map(s => ex.timeBased ? [s.duration] : [s.weight, s.reps])
+    }))
+  };
+  const payload = JSON.stringify(compact);
   const encoded = btoa(unescape(encodeURIComponent(payload)));
   const url = new URL(location.href);
   url.search = '';
@@ -4468,7 +4494,12 @@ async function sharePlan(id){
   const url = buildShareUrlForPlan(plan);
   const text = `🐾 Check out my "${plan.name}" workout on Meow Gains!`;
   if(navigator.share){
-    try{ await navigator.share({ title: 'Meow Gains preset', text, url }); return; }catch(e){ return; }
+    try{
+      await navigator.share({ title: 'Meow Gains preset', text, url });
+      return;
+    }catch(e){
+      if(e.name === 'AbortError') return;
+    }
   }
   try{
     await navigator.clipboard.writeText(url);
@@ -4485,21 +4516,26 @@ async function checkForSharedPlanImport(){
   if(!encoded) return;
 
   try{
-    const payload = JSON.parse(decodeURIComponent(escape(atob(encoded))));
-    if(payload && payload.name && Array.isArray(payload.exercises)){
-      const count = payload.exercises.length;
-      if(confirm(`Import the preset "${payload.name}" (${count} exercise${count===1?'':'s'}) shared with you?`)){
-        upsertPlan(payload.name, payload.exercises);
+    const compact = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    if(compact && compact.n && Array.isArray(compact.e)){
+      const exercises = compact.e.map(ex => ({
+        name: ex.n,
+        timeBased: !!ex.t,
+        targetSets: (ex.s || []).map(s => ex.t ? { duration: s[0] } : { weight: s[0], reps: s[1] })
+      }));
+      const count = exercises.length;
+      if(confirm(`Import the preset "${compact.n}" (${count} exercise${count===1?'':'s'}) shared with you?`)){
+        upsertPlan(compact.n, exercises);
         await savePlans();
         renderPlanList();
         renderTitleSuggestions();
-        showToast(`"${payload.name}" added to your presets! 🎀`);
+        showToast(`"${compact.n}" added to your presets! 🎀`);
         const planTab = document.querySelector('.tab[data-view="plan"]');
         if(planTab) planTab.click();
       }
     }
   }catch(e){
-    // malformed or corrupted link — quietly ignore rather than error out on load
+    // malformed or corrupted link, quietly ignore rather than error out on load
   }
   history.replaceState(null, '', location.pathname);
 }
@@ -4783,6 +4819,13 @@ $('warmupInput').addEventListener('input', scheduleDraftSave);
 // ---------- INIT ----------
 (async function init(){
   await loadData();
+
+  try{
+    if(!localStorage.getItem('meowgains_hasSeenIntro')){
+      $('welcomeOverlay').classList.add('show');
+    }
+  }catch(e){}
+
   $('dateInput').value = todayStr();
   const restored = restoreDraftIfAny();
   if(!restored){
