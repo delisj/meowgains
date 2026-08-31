@@ -420,10 +420,20 @@
 
   .set-row{
     display:grid;
-    grid-template-columns:24px 1fr 1fr 28px;
-    gap:8px;
+    grid-template-columns:24px 1fr auto auto 1fr 28px;
+    gap:6px;
     align-items:center;
     margin-bottom:8px;
+  }
+  .set-unit-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink-dim);
+  }
+  .set-x-label{
+    font-size:14px;
+    font-weight:800;
+    color:var(--ink-dim);
   }
   .set-row-time{
     grid-template-columns:24px 1fr 36px 28px;
@@ -2886,15 +2896,17 @@ function addSetRowToBlock(block, val1='', val2=''){
       <div class="set-num">${num}</div>
       <input type="number" inputmode="numeric" class="set-duration" placeholder="Duration (sec)" value="${val1}">
       <button class="set-timer-btn" type="button" data-running="false" title="Start/stop timer">▶️</button>
-      <button class="rm" type="button">×</button>
+      <button class="rm" type="button" title="Remove this set">🗑️</button>
     `;
   } else {
     row.className = 'set-row';
     row.innerHTML = `
       <div class="set-num">${num}</div>
-      <input type="text" inputmode="decimal" class="set-weight" placeholder="Weight (${unit})" value="${val1}">
+      <input type="text" inputmode="decimal" class="set-weight" placeholder="Weight" value="${val1}">
+      <span class="set-unit-label">${unit}</span>
+      <span class="set-x-label">×</span>
       <input type="number" inputmode="numeric" class="set-reps" placeholder="Reps" value="${val2}">
-      <button class="rm" type="button">×</button>
+      <button class="rm" type="button" title="Remove this set">🗑️</button>
     `;
   }
   row.querySelector('.rm').addEventListener('click', ()=>{
@@ -3745,15 +3757,17 @@ function editAddSetRow(val1='', val2=''){
       <div class="set-num">${num}</div>
       <input type="number" inputmode="numeric" class="set-duration" placeholder="Duration (sec)" value="${val1}">
       <button class="set-timer-btn" type="button" data-running="false" title="Start/stop timer">▶️</button>
-      <button class="rm" type="button">×</button>
+      <button class="rm" type="button" title="Remove this set">🗑️</button>
     `;
   } else {
     row.className = 'set-row';
     row.innerHTML = `
       <div class="set-num">${num}</div>
       <input type="text" inputmode="decimal" class="set-weight" placeholder="Weight" value="${val1}">
+      <span class="set-unit-label">${unit}</span>
+      <span class="set-x-label">×</span>
       <input type="number" inputmode="numeric" class="set-reps" placeholder="Reps" value="${val2===null?'':val2}">
-      <button class="rm" type="button">×</button>
+      <button class="rm" type="button" title="Remove this set">🗑️</button>
     `;
   }
   row.querySelector('.rm').addEventListener('click', ()=>{
