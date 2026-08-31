@@ -213,7 +213,7 @@
     font-weight:700;
   }
 
-  input[type=text],input[type=date],input[type=number],select,textarea{
+  input[type=text],input[type=number],select,textarea{
     width:100%;
     background:var(--pink-pale);
     border:2px solid var(--line);
@@ -227,13 +227,39 @@
     font-family:inherit;
     resize:vertical;
   }
+  /* iOS renders type=date as an OS-level control that can ignore CSS width entirely —
+     this wrapper force-clips it so it's guaranteed to never visually spill outside its
+     box, regardless of whatever intrinsic size iOS tries to render it at internally */
+  .date-input-wrap{
+    width:100%;
+    overflow:hidden;
+    border-radius:14px;
+    background:var(--pink-pale);
+    border:2px solid var(--line);
+    margin-bottom:14px;
+  }
   input[type=date]{
-    min-height:44px;
+    display:block;
+    width:100%;
     min-width:0;
     max-width:100%;
+    box-sizing:border-box;
+    background:transparent;
+    border:none;
+    color:var(--ink);
+    padding:11px 12px;
+    margin-bottom:0;
+    font-size:16px;
+    min-height:44px;
     line-height:1.3;
     accent-color:var(--pink);
     color-scheme:light;
+    -webkit-appearance:none;
+    appearance:none;
+  }
+  body.goth .date-input-wrap{
+    background:var(--pink-pale);
+    border-color:var(--line);
   }
   body.goth input[type=date]{
     color-scheme:dark;
@@ -241,6 +267,9 @@
   input::placeholder{ color:var(--ink-dim); }
   input:focus,select:focus{
     outline:none;
+    border-color:var(--pink);
+  }
+  .date-input-wrap:focus-within{
     border-color:var(--pink);
   }
 
@@ -515,10 +544,19 @@
     cursor:pointer;
     padding:2px 6px;
   }
+  .collapse-block-btn{
+    background:none;
+    border:none;
+    color:var(--ink-dim);
+    font-size:16px;
+    font-weight:900;
+    cursor:pointer;
+    padding:2px 6px;
+  }
   .block-header-actions{
     display:flex;
     align-items:center;
-    gap:16px;
+    gap:14px;
   }
   .done-toggle-btn{
     background:none;
@@ -557,6 +595,9 @@
   }
   .exercise-block.collapsed .block-summary{
     display:flex;
+    cursor:pointer;
+  }
+  .exercise-block.done, .exercise-block.collapsed{
     cursor:pointer;
   }
   .warmup-card.done .block-body{
@@ -1575,7 +1616,9 @@
     <img id="logKittyImg" class="log-kitty-img" style="display:none;" alt="">
     <div class="card">
       <label>Date</label>
-      <input type="date" id="dateInput">
+      <div class="date-input-wrap">
+        <input type="date" id="dateInput">
+      </div>
 
       <label>Workout title</label>
       <div class="exercise-search-wrap">
@@ -3007,6 +3050,7 @@ function createExerciseBlock(){
     <div class="block-header">
       <div class="block-num">Exercise</div>
       <div class="block-header-actions">
+        <button class="collapse-block-btn" type="button" title="Collapse for tidiness">▾</button>
         <button class="done-toggle-btn" type="button" title="Mark this exercise done">✓</button>
         <button class="remove-block-btn" type="button" title="Remove this exercise">🗑️</button>
       </div>
@@ -3117,6 +3161,18 @@ function attachBlockContainerEvents(container){
   });
 
   container.addEventListener('click', async (e)=>{
+    // if this block is done or collapsed, tapping ANYWHERE on it reopens it for editing —
+    // except the trash icon, which should still delete regardless of state. This runs
+    // first so the whole card is a forgiving tap target, not just the tiny title text
+    const clickedBlock = e.target.closest('.exercise-block');
+    if(clickedBlock && (clickedBlock.classList.contains('done') || clickedBlock.classList.contains('collapsed')) && !e.target.closest('.remove-block-btn')){
+      if(clickedBlock.classList.contains('collapsed')){
+        clickedBlock.classList.remove('collapsed');
+      } else {
+        await undoBlockDone(clickedBlock, container);
+      }
+      return;
+    }
     if(e.target.classList.contains('add-set-btn')){
       const block = e.target.closest('.exercise-block');
       const rows = block.querySelectorAll('.sets-container .set-row');
@@ -3135,6 +3191,15 @@ function attachBlockContainerEvents(container){
     }
     if(e.target.classList.contains('remove-block-btn')){
       await removeExerciseBlock(e.target.closest('.exercise-block'));
+    }
+    if(e.target.classList.contains('collapse-block-btn')){
+      const block = e.target.closest('.exercise-block');
+      if(block.classList.contains('collapsed') || block.classList.contains('done')) { /* already collapsed one way or another */ }
+      else if(!block.querySelector('.exercise-input').value.trim()){
+        showToast('Type an exercise name first 🐾');
+      } else {
+        collapseBlockForSpace(block);
+      }
     }
     if(e.target.classList.contains('done-toggle-btn')){
       const block = e.target.closest('.exercise-block');
@@ -3187,23 +3252,6 @@ function attachBlockContainerEvents(container){
       } else {
         showToast(`${result.exName} saved 💖`);
         maybeShowWarmupReminder();
-      }
-    }
-    if(e.target.classList.contains('undo-done-btn')){
-      await undoBlockDone(e.target.closest('.exercise-block'), container);
-    }
-    if(e.target.closest('.block-summary') || e.target.closest('.block-num')){
-      if(e.target.closest('.undo-done-btn')) { /* handled above already */ }
-      else {
-        const block = e.target.closest('.exercise-block');
-        // tapping a space-saving collapsed summary re-expands it; tapping the title
-        // (or summary) on an already-DONE block undoes the save the same way "↺ Edit" would,
-        // so there's always a reliable way back in even if the tiny Edit link is hard to hit
-        if(block.classList.contains('collapsed')){
-          block.classList.remove('collapsed');
-        } else if(block.classList.contains('done')){
-          await undoBlockDone(block, container);
-        }
       }
     }
     if(e.target.classList.contains('set-timer-btn')){
@@ -4271,7 +4319,7 @@ function renderProgressOverview(){
       <div class="empty" style="padding:16px 0;">
         <img class="big-icon-img" src="${emptyKittyA.src}" alt="">
         <div class="big">Nothing to compare yet</div>
-        Log the same exercise twice this week and your kitty will chart the climb 🐾
+        Log the same exercise twice this week and your ${currentSpecies === 'dog' ? 'doggo' : 'kitty'} will chart the climb 🐾
       </div>`;
   } else {
     improvedEl.innerHTML = topImproved.map(i=>`
