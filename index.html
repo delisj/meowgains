@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta name="theme-color" content="#FF6FA5">
+<style>html{background:#FFF0F5;}</style>
 <link rel="manifest" href="manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -443,6 +444,20 @@
     font-size:13px;
     text-align:center;
     font-weight:700;
+    cursor:pointer;
+    border-radius:8px;
+    padding:2px 0;
+  }
+  .set-row-time .set-num{ cursor:default; }
+  .set-row input[data-prev]:placeholder-shown::placeholder{ color:var(--pink-deep); opacity:0.75; }
+  .set-pill.warmup{ opacity:0.6; font-style:italic; }
+  .set-row .set-num.warmup{
+    background:#FFE8B8;
+    color:#A5730A;
+  }
+  body.goth .set-row .set-num.warmup{
+    background:#3a2a0f;
+    color:#E8B84D;
   }
   .set-row input{margin-bottom:0;}
   .set-row .rm{
@@ -530,6 +545,15 @@
     margin-bottom:14px;
     box-shadow:0 4px 14px rgba(230,76,136,0.06);
   }
+  body.is-dragging{ user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+  .exercise-block{ -webkit-touch-callout:none; }
+  .exercise-block .block-header, .exercise-block .block-summary, .exercise-block label{ -webkit-user-select:none; user-select:none; }
+  .block-title-wrap{ display:flex; align-items:center; gap:8px; min-width:0; }
+  .drag-handle{ font-size:20px; line-height:1; color:var(--ink-dim); padding:6px 8px 6px 0; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; }
+  .exercise-block.dragging{ opacity:0.9; transform:scale(1.02); box-shadow:0 10px 28px rgba(230,76,136,0.3); border-color:var(--pink-deep); position:relative; z-index:5; }
+  .exercise-block.dragging .drag-handle{ cursor:grabbing; }
+  .exercise-block{ transition:box-shadow .15s, transform .15s; }
+  .exercise-block.done .drag-handle, .exercise-block.collapsed .drag-handle{ opacity:0.6; }
   .block-header{
     display:flex;
     align-items:center;
@@ -649,6 +673,32 @@
     color:var(--pink-deep);
     background:var(--pink-pale);
   }
+  .streak-card{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--bg-card); border:2px solid var(--line); border-radius:16px;
+    padding:10px 14px; margin-bottom:14px;
+  }
+  .streak-main{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .streak-flame{ font-size:26px; line-height:1; }
+  .streak-title{ font-weight:800; font-size:14px; color:var(--ink); }
+  .streak-sub{ font-size:12px; color:var(--ink-dim); margin-top:2px; }
+  .streak-goal-btn{ background:none; border:2px solid var(--line); color:var(--pink-deep); border-radius:12px; padding:6px 10px; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap; }
+  .a2hs-banner{ background:var(--bg-card); border:2px dashed var(--pink); border-radius:16px; padding:12px 14px; margin-bottom:14px; font-size:13px; color:var(--ink); }
+  .btn-copy-last{
+    display:block; width:100%; background:var(--bg-card); border:2px solid var(--pink);
+    color:var(--pink-deep); padding:11px; font-size:13px; font-weight:800;
+    border-radius:16px; margin-bottom:14px; cursor:pointer;
+  }
+  .backup-banner{
+    background:var(--bg-card); border:2px dashed var(--pink); border-radius:16px;
+    padding:12px 14px; margin-bottom:14px; font-size:13px; color:var(--ink);
+  }
+  .backup-banner-actions{ display:flex; gap:8px; margin-top:8px; }
+  .backup-banner-actions button{
+    flex:1; border:none; border-radius:12px; padding:9px; font-weight:800; font-size:13px;
+    background:var(--pink-deep); color:#fff; cursor:pointer;
+  }
+  .backup-banner-actions button.later{ background:none; border:2px solid var(--line); color:var(--ink-dim); }
   .btn-add-exercise{
     display:block;
     width:100%;
@@ -746,6 +796,19 @@
     background:none;
     border:2px dashed var(--line);
     color:var(--pink-deep);
+    font-size:12px;
+    font-weight:800;
+    padding:10px;
+    border-radius:14px;
+    cursor:pointer;
+  }
+  .delete-day-btn{
+    display:block;
+    width:100%;
+    margin-top:6px;
+    background:none;
+    border:2px dashed #E0566B;
+    color:#E0566B;
     font-size:12px;
     font-weight:800;
     padding:10px;
@@ -1597,6 +1660,8 @@
     margin-bottom:18px;
   }
 </style>
+<script data-goatcounter="https://meowgains.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
 
@@ -1623,6 +1688,30 @@
 
   <!-- LOG VIEW -->
   <section id="view-log" class="view active">
+    <div class="a2hs-banner" id="a2hsBanner" style="display:none;">
+      <div id="a2hsText"></div>
+      <div class="backup-banner-actions">
+        <button type="button" id="a2hsInstallBtn" style="display:none;">Install</button>
+        <button type="button" id="a2hsDismissBtn" class="later">Got it</button>
+      </div>
+    </div>
+    <div class="streak-card" id="streakCard">
+      <div class="streak-main">
+        <div class="streak-flame" id="streakFlame">🔥</div>
+        <div>
+          <div class="streak-title" id="streakTitle"></div>
+          <div class="streak-sub" id="streakSub"></div>
+        </div>
+      </div>
+      <button type="button" class="streak-goal-btn" id="streakGoalBtn" title="Change weekly goal">Goal: <span id="streakGoalNum">3</span>/wk ✎</button>
+    </div>
+    <div class="backup-banner" id="backupBanner" style="display:none;">
+      <div class="backup-banner-text" id="backupBannerText">Your workouts only live on this phone. Save a backup? 🐾</div>
+      <div class="backup-banner-actions">
+        <button type="button" id="backupBannerNow">Download</button>
+        <button type="button" id="backupBannerLater" class="later">Later</button>
+      </div>
+    </div>
     <img id="logKittyImg" class="log-kitty-img" style="display:none;" alt="">
     <div class="card">
       <label>Date</label>
@@ -1653,6 +1742,8 @@
         <input type="text" id="warmupInput" placeholder="e.g. 5 min light cardio + dynamic stretches">
       </div>
     </div>
+
+    <button class="btn-copy-last" id="copyLastBtn" type="button">📋 Copy my last workout</button>
 
     <div id="exerciseBlocksContainer"></div>
 
@@ -2470,6 +2561,8 @@ $('exportDataBtn').addEventListener('click', ()=>{
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+  try{ localStorage.setItem('meowgains_lastBackup', String(Date.now())); }catch(e){}
+  const bb=document.getElementById('backupBanner'); if(bb) bb.style.display='none';
   showToast('Backup downloaded 🎀');
 });
 
@@ -2482,7 +2575,7 @@ function csvEscape(val){
 }
 
 function generateWorkoutsCSV(){
-  const rows = [['Date','Title','Exercise','Category','Set','Weight','Reps','Duration(sec)','Unit','Notes']];
+  const rows = [['Date','Title','Exercise','Category','Set','Weight','Reps','Duration(sec)','Warmup','Unit','Notes']];
   workouts.slice().sort((a,b)=> a.date.localeCompare(b.date)).forEach(w=>{
     const cat = categoryForExerciseName(w.exercise);
     w.sets.forEach((s,i)=>{
@@ -2495,6 +2588,7 @@ function generateWorkoutsCSV(){
         w.timeBased ? '' : (s.weight ?? ''),
         w.timeBased ? '' : (s.reps ?? ''),
         w.timeBased ? (s.duration ?? '') : '',
+        s.isWarmup ? 'yes' : '',
         w.unit || 'kg',
         w.notes || ''
       ]);
@@ -2730,14 +2824,14 @@ function renderTitleSuggestions(){
 // total weight lifted across a set of workout entries: sum(weight × reps) for every set
 function calcVolume(entries){
   let total = 0;
-  entries.forEach(w=>w.sets.forEach(s=>{ total += (s.weight||0) * (s.reps||0); }));
+  entries.forEach(w=>w.sets.forEach(s=>{ if(s.isWarmup) return; total += (s.weight||0) * (s.reps||0); }));
   return total;
 }
 
 // total reps performed across a set of workout entries
 function calcReps(entries){
   let total = 0;
-  entries.forEach(w=>w.sets.forEach(s=>{ total += (s.reps||0); }));
+  entries.forEach(w=>w.sets.forEach(s=>{ if(s.isWarmup) return; total += (s.reps||0); }));
   return total;
 }
 
@@ -2749,7 +2843,9 @@ function getEntryMetric(entry){
     const maxDur = Math.max(...entry.sets.map(s=>s.duration||0));
     return { value: maxDur, unit: 's' };
   }
-  const maxW = Math.max(...entry.sets.map(s=>s.weight||0));
+  const working = entry.sets.filter(s=>!s.isWarmup);
+  const counted = working.length ? working : entry.sets;
+  const maxW = Math.max(...counted.map(s=>s.weight||0));
   return { value: maxW, unit: entry.unit || 'kg' };
 }
 
@@ -2884,7 +2980,32 @@ function resolveCanonicalExerciseName(typedName){
   return typedName.trim();
 }
 
-function addSetRowToBlock(block, val1='', val2=''){
+// warm-up sets: tap a set's number to mark it as a lighter ramp-up set (shown as "W").
+// they're saved with the exercise but never counted in volume, reps, or records
+function setWarmupOnRow(row, on){
+  row.dataset.warmup = on ? '1' : '';
+  const el = row.querySelector('.set-num');
+  if(el) el.classList.toggle('warmup', !!on);
+}
+function isWarmupRow(row){ return row.dataset.warmup === '1'; }
+function renumberSetRows(rows){
+  let n = 0;
+  rows.forEach(r=>{
+    const el = r.querySelector('.set-num');
+    if(isWarmupRow(r)){ el.textContent = 'W'; }
+    else { n++; el.textContent = n; }
+  });
+}
+function attachWarmupToggle(row, onChange){
+  const el = row.querySelector('.set-num');
+  el.title = 'Tap to mark as a warm-up set';
+  el.addEventListener('click', ()=>{
+    setWarmupOnRow(row, !isWarmupRow(row));
+    onChange();
+  });
+}
+
+function addSetRowToBlock(block, val1='', val2='', isWarmup=false){
   const isTime = block.querySelector('.timebased-checkbox').checked;
   const setsContainer = block.querySelector('.sets-container');
   const num = setsContainer.querySelectorAll('.set-row').length + 1;
@@ -2908,6 +3029,8 @@ function addSetRowToBlock(block, val1='', val2=''){
       <input type="number" inputmode="numeric" class="set-reps" placeholder="Reps" value="${val2}">
       <button class="rm" type="button" title="Remove this set">🗑️</button>
     `;
+    attachWarmupToggle(row, ()=> renumberSetsInBlock(block));
+    if(isWarmup) setWarmupOnRow(row, true);
   }
   row.querySelector('.rm').addEventListener('click', ()=>{
     const timerBtn = row.querySelector('.set-timer-btn');
@@ -2918,6 +3041,7 @@ function addSetRowToBlock(block, val1='', val2=''){
     renumberSetsInBlock(block);
   });
   setsContainer.appendChild(row);
+  renumberSetsInBlock(block);
 }
 
 // finds the most recent past entry for an exercise, regardless of what block/type is being edited now
@@ -2929,23 +3053,40 @@ function getPreviousEntryForExercise(name){
 
 // fills every set row's placeholder with what you did last time for this exercise,
 // shown as light-grey ghost text — never an actual value, so an empty box still saves as empty
+// tapping an empty box that's showing last time's number fills it in and selects it, so you can
+// keep it as-is or just type over it. Only in the Log tab, where those grey numbers appear.
+document.addEventListener('focusin', (e)=>{
+  const t = e.target;
+  if(!t || !t.matches || !t.matches('.set-weight, .set-reps, .set-duration')) return;
+  if(!t.closest('#exerciseBlocksContainer')) return;
+  if(t.value !== '' || !t.dataset.prev) return;
+  t.value = t.dataset.prev;
+  t.dispatchEvent(new Event('input', { bubbles: true })); // so the draft autosave picks it up
+  setTimeout(()=>{ try{ t.select(); }catch(err){} }, 0);
+});
+
 function applyPlaceholdersToBlock(block){
   const name = block.querySelector('.exercise-input').value.trim();
   const isTime = block.querySelector('.timebased-checkbox').checked;
   const prevEntry = name ? getPreviousEntryForExercise(name) : null;
   const rows = block.querySelectorAll('.sets-container .set-row');
-  rows.forEach((row, i)=>{
-    const prevSet = prevEntry && prevEntry.sets[i] ? prevEntry.sets[i] : null;
+  const prevWorking = prevEntry ? prevEntry.sets.filter(s=>!s.isWarmup) : [];
+  let workingIdx = 0;
+  rows.forEach((row)=>{
+    const prevSet = isWarmupRow(row) ? null : (prevWorking[workingIdx++] || null);
     if(isTime){
       const durInput = row.querySelector('.set-duration');
       if(!durInput) return;
       durInput.placeholder = (prevSet && prevSet.duration != null) ? `${prevSet.duration}` : 'Duration (sec)';
+      if(prevSet && prevSet.duration != null) durInput.dataset.prev = prevSet.duration; else delete durInput.dataset.prev;
     } else {
       const wInput = row.querySelector('.set-weight');
       const rInput = row.querySelector('.set-reps');
       if(!wInput || !rInput) return;
       wInput.placeholder = (prevSet && prevSet.weight != null) ? `${prevSet.weight}` : `Weight (${unit})`;
       rInput.placeholder = (prevSet && prevSet.reps != null) ? `${prevSet.reps}` : 'Reps';
+      if(prevSet && prevSet.weight != null) wInput.dataset.prev = prevSet.weight; else delete wInput.dataset.prev;
+      if(prevSet && prevSet.reps != null) rInput.dataset.prev = prevSet.reps; else delete rInput.dataset.prev;
     }
   });
 }
@@ -2957,8 +3098,7 @@ function rebuildSetsForBlock(block){
 }
 
 function renumberSetsInBlock(block){
-  const rows = block.querySelectorAll('.sets-container .set-row');
-  rows.forEach((r,i)=>{ r.querySelector('.set-num').textContent = i+1; });
+  renumberSetRows(block.querySelectorAll('.sets-container .set-row'));
 }
 
 function selectExerciseForBlock(block, name){
@@ -3060,7 +3200,9 @@ function createExerciseBlock(){
   block.className = 'exercise-block';
   block.innerHTML = `
     <div class="block-header">
-      <div class="block-num">Exercise</div>
+      <div class="block-title-wrap">
+        <div class="block-num">Exercise</div>
+      </div>
       <div class="block-header-actions">
         <button class="collapse-block-btn" type="button" title="Collapse for tidiness">▾</button>
         <button class="done-toggle-btn" type="button" title="Mark this exercise done">✓</button>
@@ -3086,7 +3228,7 @@ function createExerciseBlock(){
         ⏱️ Time-based (track duration instead of weight, e.g. plank, cardio)
       </label>
 
-      <label>Sets</label>
+      <label>Sets <span style="font-weight:500; font-size:11px; color:var(--ink-dim);">(tap a number to mark a warm-up set)</span></label>
       <div class="sets-container"></div>
       <button class="btn-add-set add-set-btn" type="button">+ add another set</button>
 
@@ -3239,6 +3381,12 @@ function attachBlockContainerEvents(container){
         return;
       }
 
+      // mark done IMMEDIATELY, synchronously, before any async work below — this closes
+      // a real race condition where a rapid double-tap (a known mobile Safari quirk,
+      // one physical tap registering as two click events) could otherwise slip a second
+      // save through before this block was flagged as already-done, creating a duplicate
+      block.classList.add('done');
+
       workouts = [result.entry, ...workouts];
       await saveWorkouts();
       await saveExercises();
@@ -3254,7 +3402,6 @@ function attachBlockContainerEvents(container){
       renderOverview();
 
       block.dataset.savedEntryId = result.entry.id;
-      block.classList.add('done');
       const setCount = result.entry.sets.length;
       block.querySelector('.block-summary').innerHTML =
         `<span>✓ ${result.exName}, ${setCount} set${setCount===1?'':'s'} saved</span><button class="undo-done-btn" type="button">↺ Edit</button>`;
@@ -3423,7 +3570,9 @@ function buildEntryFromBlock(block, date, title, sessionNotes, queuedEntries, wa
       const w = r.querySelector('.set-weight').value;
       const reps = r.querySelector('.set-reps').value;
       if(w !== '' || reps !== ''){
-        sets.push({ weight: parseDecimal(w)||0, reps: parseInt(reps)||0 });
+        const s = { weight: parseDecimal(w)||0, reps: parseInt(reps)||0 };
+        if(isWarmupRow(r)) s.isWarmup = true;
+        sets.push(s);
       }
     });
   }
@@ -3651,6 +3800,7 @@ function isAllTimeRecord(entry){
 }
 
 function renderOverview(){
+  try{ renderStreak(); }catch(e){}
   const range = overviewRange === 'week' ? getWeekRange() : getMonthRange();
   const entries = workouts.filter(w=> w.date >= range.start && w.date <= range.end);
 
@@ -3742,12 +3892,12 @@ function openEditModal(id){
   if(editIsTime){
     entry.sets.forEach(s => editAddSetRow(s.duration));
   } else {
-    entry.sets.forEach(s => editAddSetRow(s.weight, s.reps));
+    entry.sets.forEach(s => editAddSetRow(s.weight, s.reps, !!s.isWarmup));
   }
   $('editOverlay').classList.add('show');
 }
 
-function editAddSetRow(val1='', val2=''){
+function editAddSetRow(val1='', val2='', isWarmup=false){
   const container = $('editSetsContainer');
   const num = container.querySelectorAll('.set-row').length + 1;
   const row = document.createElement('div');
@@ -3774,9 +3924,14 @@ function editAddSetRow(val1='', val2=''){
     const timerBtn = row.querySelector('.set-timer-btn');
     if(timerBtn && timerBtn.dataset.running === 'true') clearInterval(Number(timerBtn.dataset.intervalId));
     row.remove();
-    container.querySelectorAll('.set-row').forEach((r,i)=>{ r.querySelector('.set-num').textContent = i+1; });
+    renumberSetRows(container.querySelectorAll('.set-row'));
   });
+  if(!editIsTime){
+    attachWarmupToggle(row, ()=> renumberSetRows(container.querySelectorAll('.set-row')));
+    if(isWarmup) setWarmupOnRow(row, true);
+  }
   container.appendChild(row);
+  renumberSetRows(container.querySelectorAll('.set-row'));
 }
 $('editAddSetBtn').addEventListener('click', ()=> editAddSetRow());
 
@@ -3813,7 +3968,11 @@ $('editSaveBtn').addEventListener('click', async ()=>{
     rows.forEach(r=>{
       const w = r.querySelector('.set-weight').value;
       const reps = r.querySelector('.set-reps').value;
-      if(w !== '' || reps !== '') newSets.push({ weight: parseDecimal(w)||0, reps: parseInt(reps)||0 });
+      if(w !== '' || reps !== ''){
+        const s = { weight: parseDecimal(w)||0, reps: parseInt(reps)||0 };
+        if(isWarmupRow(r)) s.isWarmup = true;
+        newSets.push(s);
+      }
     });
   }
   if(newSets.length === 0){ showToast('Add at least one set 🐾'); return; }
@@ -3842,6 +4001,24 @@ function attachCollapseHandlers(container){
   });
 }
 
+// removes every logged exercise for a given day in one action, instead of needing to
+// delete each exercise within that day individually
+function attachDeleteDayHandlers(container){
+  container.querySelectorAll('.delete-day-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const date = btn.dataset.date;
+      const count = workouts.filter(w => w.date === date).length;
+      if(count === 0) return;
+      if(!confirm(`Delete all ${count} exercise${count===1?'':'s'} logged on ${formatDate(date)}? This can't be undone.`)) return;
+      workouts = workouts.filter(w => w.date !== date);
+      await saveWorkouts();
+      renderHistory();
+      renderOverview();
+      showToast('That day has been deleted 🐾');
+    });
+  });
+}
+
 // lets a past day in History become a reusable preset, without retyping every exercise
 function attachSaveDayAsPresetHandlers(container){
   container.querySelectorAll('.save-day-as-preset-btn').forEach(btn=>{
@@ -3855,7 +4032,7 @@ function attachSaveDayAsPresetHandlers(container){
       const exercises = dayEntries.map(w => ({
         name: w.exercise,
         timeBased: !!w.timeBased,
-        targetSets: w.sets.map(s => w.timeBased ? { duration: s.duration } : { weight: s.weight, reps: s.reps })
+        targetSets: w.sets.map(s => w.timeBased ? { duration: s.duration } : (s.isWarmup ? { weight: s.weight, reps: s.reps, isWarmup: true } : { weight: s.weight, reps: s.reps }))
       }));
       upsertPlan(name.trim(), exercises);
       await savePlans();
@@ -3936,7 +4113,7 @@ function renderHistoryByMonth(){
       const exercisesHtml = dayEntries.map(w=>{
         const setsHtml = w.timeBased
           ? w.sets.map(s=>`<span class="set-pill">${s.duration}s</span>`).join('')
-          : w.sets.map(s=>`<span class="set-pill">${s.weight}${w.unit||'kg'} × ${s.reps}</span>`).join('');
+          : w.sets.map(s=>`<span class="set-pill${s.isWarmup?' warmup':''}">${s.isWarmup?'W · ':''}${s.weight}${w.unit||'kg'} × ${s.reps}</span>`).join('');
         return `
           <div class="session-sub">
             <div class="session-ex">${w.exercise}</div>
@@ -3958,7 +4135,10 @@ function renderHistoryByMonth(){
               <span class="chevron">▾</span>
             </div>
           </div>
-          <div class="day-session-body">${exercisesHtml}</div>
+          <div class="day-session-body">
+            ${exercisesHtml}
+            <button class="delete-day-btn" data-date="${date}" type="button">🗑️ Delete this whole day</button>
+          </div>
         </div>
       `;
     }).join('');
@@ -3984,6 +4164,7 @@ function renderHistoryByMonth(){
   attachEditHandlers(list);
   attachCollapseHandlers(list);
   attachDaySessionCollapseHandlers(list);
+  attachDeleteDayHandlers(list);
 }
 
 // how many recent days show before "Show older workouts" is needed, resets on new search
@@ -4039,7 +4220,7 @@ function renderHistoryByDate(){
     const sessionsHtml = entries.map(w=>{
       const setsHtml = w.timeBased
         ? w.sets.map(s=>`<span class="set-pill">${s.duration}s</span>`).join('')
-        : w.sets.map(s=>`<span class="set-pill">${s.weight}${w.unit||'kg'} × ${s.reps}</span>`).join('');
+        : w.sets.map(s=>`<span class="set-pill${s.isWarmup?' warmup':''}">${s.isWarmup?'W · ':''}${s.weight}${w.unit||'kg'} × ${s.reps}</span>`).join('');
       return `
         <div class="session-sub">
           <div class="session-ex">${w.exercise}</div>
@@ -4064,6 +4245,7 @@ function renderHistoryByDate(){
         <div class="date-body">
           ${sessionsHtml}
           <button class="save-day-as-preset-btn" data-date="${date}" type="button">💾 Save this day as a preset</button>
+          <button class="delete-day-btn" data-date="${date}" type="button">🗑️ Delete this whole day</button>
         </div>
       </div>
     `;
@@ -4073,6 +4255,7 @@ function renderHistoryByDate(){
   attachEditHandlers(list);
   attachCollapseHandlers(list);
   attachSaveDayAsPresetHandlers(list);
+  attachDeleteDayHandlers(list);
 
   if(hasMore){
     $('historyShowMoreBtn').addEventListener('click', ()=>{
@@ -4096,7 +4279,7 @@ function renderHistoryByExercise(){
   list.innerHTML = filtered.map(w=>{
     const setsHtml = w.timeBased
         ? w.sets.map(s=>`<span class="set-pill">${s.duration}s</span>`).join('')
-        : w.sets.map(s=>`<span class="set-pill">${s.weight}${w.unit||'kg'} × ${s.reps}</span>`).join('');
+        : w.sets.map(s=>`<span class="set-pill${s.isWarmup?' warmup':''}">${s.isWarmup?'W · ':''}${s.weight}${w.unit||'kg'} × ${s.reps}</span>`).join('');
     return `
       <div class="session">
         <div class="session-top">
@@ -4399,7 +4582,7 @@ function aggregateSessionsByPeriod(sessions, periodType){
     const m = getEntryMetric(s);
     if(!buckets[key]) buckets[key] = { key, bestValue: 0, totalReps: 0, unit: m.unit };
     if(m.value > buckets[key].bestValue) buckets[key].bestValue = m.value;
-    if(!s.timeBased) buckets[key].totalReps += s.sets.reduce((sum,x)=>sum+(x.reps||0), 0);
+    if(!s.timeBased) buckets[key].totalReps += s.sets.reduce((sum,x)=>sum+(x.isWarmup?0:(x.reps||0)), 0);
   });
   return Object.keys(buckets).sort().map(k=>buckets[k]);
 }
@@ -4529,7 +4712,7 @@ function renderProgress(){
     const recentSessions = sessions.slice(-10);
     $('progressBars').innerHTML = recentSessions.map(s=>{
       const m = getEntryMetric(s);
-      const repsText = s.timeBased ? '' : ' · ' + s.sets.reduce((sum,x)=>sum+(x.reps||0),0) + 'r';
+      const repsText = s.timeBased ? '' : ' · ' + s.sets.reduce((sum,x)=>sum+(x.isWarmup?0:(x.reps||0)),0) + 'r';
       const pct = Math.round((m.value/maxVal)*100);
       return `
         <div class="bar-row">
@@ -4602,7 +4785,11 @@ function gatherBlocksAsExerciseList(container){
       rows.forEach(r=>{
         const w = r.querySelector('.set-weight').value;
         const reps = r.querySelector('.set-reps').value;
-        if(w !== '' || reps !== '') targetSets.push({ weight: parseDecimal(w)||0, reps: parseInt(reps)||0 });
+        if(w !== '' || reps !== ''){
+          const s = { weight: parseDecimal(w)||0, reps: parseInt(reps)||0 };
+          if(isWarmupRow(r)) s.isWarmup = true;
+          targetSets.push(s);
+        }
       });
     }
     resolveCategoryForBlock(block, exName);
@@ -4622,7 +4809,7 @@ function loadPlanIntoLogForm(plan){
     block.querySelector('.exercise-input').value = pe.name;
     (pe.targetSets && pe.targetSets.length ? pe.targetSets : [{}]).forEach(s=>{
       if(pe.timeBased) addSetRowToBlock(block, s.duration != null ? s.duration : '');
-      else addSetRowToBlock(block, s.weight != null ? s.weight : '', s.reps != null ? s.reps : '');
+      else addSetRowToBlock(block, s.weight != null ? s.weight : '', s.reps != null ? s.reps : '', !!s.isWarmup);
     });
     renderExerciseSearchResults(block);
     hideExerciseSearchResults(block);
@@ -4715,7 +4902,7 @@ function loadPlanIntoBuilder(plan){
     block.querySelector('.exercise-input').value = pe.name;
     (pe.targetSets && pe.targetSets.length ? pe.targetSets : [{}]).forEach(s=>{
       if(pe.timeBased) addSetRowToBlock(block, s.duration != null ? s.duration : '');
-      else addSetRowToBlock(block, s.weight != null ? s.weight : '', s.reps != null ? s.reps : '');
+      else addSetRowToBlock(block, s.weight != null ? s.weight : '', s.reps != null ? s.reps : '', !!s.isWarmup);
     });
     updateCategoryRowVisibilityForBlock(block);
   });
@@ -4736,7 +4923,7 @@ function buildShareUrlForPlan(plan){
     e: plan.exercises.map(ex => ({
       n: ex.name,
       t: ex.timeBased ? 1 : 0,
-      s: ex.targetSets.map(s => ex.timeBased ? [s.duration] : [s.weight, s.reps])
+      s: ex.targetSets.map(s => ex.timeBased ? [s.duration] : (s.isWarmup ? [s.weight, s.reps, 1] : [s.weight, s.reps]))
     }))
   };
   const payload = JSON.stringify(compact);
@@ -4891,7 +5078,7 @@ async function checkForSharedPlanImport(){
       const exercises = compact.e.map(ex => ({
         name: ex.n,
         timeBased: !!ex.t,
-        targetSets: (ex.s || []).map(s => ex.t ? { duration: s[0] } : { weight: s[0], reps: s[1] })
+        targetSets: (ex.s || []).map(s => ex.t ? { duration: s[0] } : (s[2] ? { weight: s[0], reps: s[1], isWarmup: true } : { weight: s[0], reps: s[1] }))
       }));
       const count = exercises.length;
       if(confirm(`Import the preset "${compact.n}" (${count} exercise${count===1?'':'s'}) shared with you?`)){
@@ -5101,7 +5288,7 @@ function gatherLogDraft(){
       if(isTime){
         return { duration: r.querySelector('.set-duration').value };
       }
-      return { weight: r.querySelector('.set-weight').value, reps: r.querySelector('.set-reps').value };
+      return { weight: r.querySelector('.set-weight').value, reps: r.querySelector('.set-reps').value, isWarmup: isWarmupRow(r) };
     });
     const catRow = block.querySelector('.custom-category-row');
     const categoryVisible = catRow.style.display !== 'none';
@@ -5164,7 +5351,7 @@ function restoreDraftIfAny(){
       block.querySelector('.exercise-input').value = bd.exerciseInput || '';
       (bd.sets && bd.sets.length ? bd.sets : [{}]).forEach(s=>{
         if(bd.timeBased) addSetRowToBlock(block, s.duration || '');
-        else addSetRowToBlock(block, s.weight || '', s.reps || '');
+        else addSetRowToBlock(block, s.weight || '', s.reps || '', !!s.isWarmup);
       });
       updateCategoryRowVisibilityForBlock(block);
       applyPlaceholdersToBlock(block);
@@ -5185,6 +5372,132 @@ $('dateInput').addEventListener('input', scheduleDraftSave);
 $('titleInput').addEventListener('input', scheduleDraftSave);
 $('notesInput').addEventListener('input', scheduleDraftSave);
 $('warmupInput').addEventListener('input', scheduleDraftSave);
+
+
+// ---- Copy my last workout (works without saving it as a preset) ----
+function getLastWorkoutAsPlan(){
+  if(!workouts.length) return null;
+  const lastDate = workouts.map(w=>w.date).sort().pop();
+  const entries = workouts.filter(w=>w.date===lastDate).slice().reverse(); // saved order
+  const seen = new Set(); const exercises = [];
+  entries.forEach(w=>{
+    const key = (w.exercise||'').toLowerCase();
+    if(!key || seen.has(key)) return;
+    seen.add(key);
+    exercises.push({
+      name: w.exercise, timeBased: !!w.timeBased,
+      targetSets: (w.sets||[]).map(st=> w.timeBased ? { duration: st.duration } : { weight: st.weight, reps: st.reps, isWarmup: !!st.isWarmup })
+    });
+  });
+  const title = (entries.find(w=>w.title)||{}).title || '';
+  return { name: title, exercises, date: lastDate };
+}
+$('copyLastBtn').addEventListener('click', ()=>{
+  const plan = getLastWorkoutAsPlan();
+  if(!plan || !plan.exercises.length){ showToast('No earlier workout to copy yet 🐾'); return; }
+  const hasContent = [...document.querySelectorAll('#exerciseBlocksContainer .exercise-input')].some(i=>i.value.trim());
+  if(hasContent && !confirm('Replace what you have in the form now with your last workout?')) return;
+  loadPlanIntoLogForm(plan);
+  if(plan.name && !$('titleInput').value.trim()) $('titleInput').value = plan.name;
+  showToast('Copied your workout from ' + formatDate(plan.date) + ' 🐾 hold a card to reorder');
+});
+
+// ---- Gentle backup reminder ----
+function maybeShowBackupBanner(){
+  try{
+    if(workouts.length < 3) return;
+    const DAY = 86400000, now = Date.now();
+    const last = parseInt(localStorage.getItem('meowgains_lastBackup')||'0',10);
+    const snooze = parseInt(localStorage.getItem('meowgains_backupSnooze')||'0',10);
+    if(now < snooze) return;
+    if(last && now - last < 30*DAY) return;
+    $('backupBannerText').textContent = last
+      ? 'It has been a while since your last backup. Save one? 🐾'
+      : 'Your workouts only live on this phone. Save a backup so they never get lost? 🐾';
+    $('backupBanner').style.display = 'block';
+  }catch(e){}
+}
+$('backupBannerNow').addEventListener('click', ()=> $('exportDataBtn').click());
+$('backupBannerLater').addEventListener('click', ()=>{
+  try{ localStorage.setItem('meowgains_backupSnooze', String(Date.now() + 7*86400000)); }catch(e){}
+  $('backupBanner').style.display='none';
+});
+
+// ---- Weekly goal + streak ----
+function parseYMD(str){ const [y,m,d]=str.split('-').map(Number); return new Date(y,m-1,d); }
+function ymd(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function weekStartKey(dateStr){ const d=parseYMD(dateStr); const dow=(d.getDay()+6)%7; d.setDate(d.getDate()-dow); return ymd(d); }
+function getWeeklyGoal(){ try{ const g=parseInt(localStorage.getItem('meowgains_weeklyGoal')||'3',10); return g>=1&&g<=7?g:3; }catch(e){ return 3; } }
+function renderStreak(){
+  const card=document.getElementById('streakCard'); if(!card) return;
+  const goal=getWeeklyGoal();
+  const daysByWeek={};
+  workouts.forEach(w=>{ if(!w.date) return; const k=weekStartKey(w.date); (daysByWeek[k]=daysByWeek[k]||new Set()).add(w.date); });
+  const thisWeek=weekStartKey(todayStr());
+  const done=(daysByWeek[thisWeek]||new Set()).size;
+  // count consecutive completed weeks going back; the current week only adds once its goal is met
+  let streak=0; const cur=parseYMD(thisWeek);
+  if(done>=goal) streak=1;
+  for(let i=1;i<520;i++){
+    const d=new Date(cur); d.setDate(d.getDate()-7*i);
+    const c=(daysByWeek[ymd(d)]||new Set()).size;
+    if(c>=goal) streak++; else break;
+  }
+  document.getElementById('streakGoalNum').textContent=goal;
+  document.getElementById('streakFlame').textContent = streak>0 ? '🔥' : '🐾';
+  document.getElementById('streakTitle').textContent = streak>0
+    ? streak+' week streak'
+    : (workouts.length ? 'Start a new streak' : 'Your first workout starts it');
+  const left=Math.max(0,goal-done);
+  document.getElementById('streakSub').textContent = done>=goal
+    ? 'Goal reached this week: '+done+'/'+goal+' 🎀'
+    : 'This week: '+done+'/'+goal+' ('+left+' to go)';
+}
+document.getElementById('streakGoalBtn').addEventListener('click',()=>{
+  const v=prompt('How many workout days per week is your goal? (1 to 7)', String(getWeeklyGoal()));
+  if(v===null) return;
+  const n=parseInt(v,10);
+  if(!(n>=1&&n<=7)){ showToast('Pick a number from 1 to 7 🐾'); return; }
+  try{ localStorage.setItem('meowgains_weeklyGoal', String(n)); }catch(e){}
+  renderStreak();
+});
+
+// ---- Add to Home Screen hint ----
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); deferredInstallPrompt=e; maybeShowA2HS(); });
+function maybeShowA2HS(){
+  try{
+    if(localStorage.getItem('meowgains_a2hsDismissed')) return;
+    const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone===true;
+    if(standalone) return;
+    const ua=navigator.userAgent||'';
+    const isIOS=/iphone|ipad|ipod/i.test(ua) || (/Macintosh/i.test(ua) && navigator.maxTouchPoints>1);
+    const isMobile=isIOS || /android/i.test(ua);
+    if(!isMobile) return;
+    const txt=document.getElementById('a2hsText');
+    if(isIOS){
+      txt.textContent='Install Meow Gains: tap the Share button in Safari, then "Add to Home Screen". It opens like a real app and works offline 🐾';
+    } else if(deferredInstallPrompt){
+      txt.textContent='Install Meow Gains on your home screen so it opens like a real app and works offline 🐾';
+      document.getElementById('a2hsInstallBtn').style.display='block';
+    } else {
+      txt.textContent='Install Meow Gains: open your browser menu and choose "Add to Home screen" (or "Install app") 🐾';
+    }
+    document.getElementById('a2hsBanner').style.display='block';
+  }catch(e){}
+}
+document.getElementById('a2hsDismissBtn').addEventListener('click',()=>{
+  try{ localStorage.setItem('meowgains_a2hsDismissed','1'); }catch(e){}
+  document.getElementById('a2hsBanner').style.display='none';
+});
+document.getElementById('a2hsInstallBtn').addEventListener('click', async ()=>{
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  try{ await deferredInstallPrompt.userChoice; }catch(e){}
+  deferredInstallPrompt=null;
+  try{ localStorage.setItem('meowgains_a2hsDismissed','1'); }catch(e){}
+  document.getElementById('a2hsBanner').style.display='none';
+});
 
 // ---------- INIT ----------
 (async function init(){
@@ -5210,11 +5523,85 @@ $('warmupInput').addEventListener('input', scheduleDraftSave);
   renderOverview();
   renderProgressExerciseList();
   maybeShowLogKitty();
+  maybeShowBackupBanner();
+  maybeShowA2HS();
   await checkForSharedPlanImport();
 
   if('serviceWorker' in navigator){
     try{ await navigator.serviceWorker.register('sw.js'); }catch(e){}
   }
+})();
+
+// ---- Press and hold an exercise card to drag it into a new position ----
+(function(){
+  const container = document.getElementById('exerciseBlocksContainer');
+  if(!container) return;
+  const HOLD_MS = 350, MOVE_TOLERANCE = 10;
+  let timer=null, startX=0, startY=0, startBlock=null, dragBlock=null, scrollRAF=null, lastY=0, justDragged=false;
+
+  function interactive(el){
+    return el.closest && el.closest('input, textarea, select, button, label, .exercise-search-results, .set-num');
+  }
+  function reorderAt(y){
+    const others=[...container.querySelectorAll('.exercise-block')].filter(b=>b!==dragBlock);
+    let before=null;
+    for(const b of others){ const r=b.getBoundingClientRect(); if(y < r.top + r.height/2){ before=b; break; } }
+    if(before){ if(dragBlock.nextSibling!==before) container.insertBefore(dragBlock,before); }
+    else if(container.lastElementChild!==dragBlock){ container.appendChild(dragBlock); }
+  }
+  function autoScroll(){
+    if(!dragBlock) return;
+    const edge=90;
+    if(lastY<edge) window.scrollBy(0,-12); else if(lastY>window.innerHeight-edge) window.scrollBy(0,12);
+    reorderAt(lastY);
+    scrollRAF=requestAnimationFrame(autoScroll);
+  }
+  function beginDrag(){
+    timer=null;
+    if(!startBlock) return;
+    dragBlock=startBlock; lastY=startY;
+    dragBlock.classList.add('dragging');
+    document.body.classList.add('is-dragging');
+    try{ if(navigator.vibrate) navigator.vibrate(12); }catch(e){}
+    scrollRAF=requestAnimationFrame(autoScroll);
+  }
+  function cancelPending(){ if(timer){ clearTimeout(timer); timer=null; } startBlock=null; }
+  function endDrag(){
+    cancelPending();
+    if(!dragBlock) return;
+    cancelAnimationFrame(scrollRAF);
+    dragBlock.classList.remove('dragging');
+    document.body.classList.remove('is-dragging');
+    dragBlock=null;
+    justDragged=true; setTimeout(()=>{ justDragged=false; }, 350);
+    updateBlockNumbers(container);
+    scheduleDraftSave();
+  }
+  function start(target, x, y){
+    if(interactive(target)) return;
+    const blk = target.closest && target.closest('.exercise-block');
+    if(!blk || blk.parentNode!==container) return;
+    startBlock=blk; startX=x; startY=y;
+    timer=setTimeout(beginDrag, HOLD_MS);
+  }
+  function move(x,y,e){
+    if(dragBlock){ lastY=y; reorderAt(y); if(e.cancelable) e.preventDefault(); return; }
+    if(timer && (Math.abs(x-startX)>MOVE_TOLERANCE || Math.abs(y-startY)>MOVE_TOLERANCE)) cancelPending();
+  }
+
+  // touch (phones)
+  container.addEventListener('touchstart',(e)=>{ if(e.touches.length!==1){ cancelPending(); return; } const t=e.touches[0]; start(e.target,t.clientX,t.clientY); },{passive:true});
+  container.addEventListener('touchmove',(e)=>{ const t=e.touches[0]; if(t) move(t.clientX,t.clientY,e); },{passive:false});
+  container.addEventListener('touchend',endDrag);
+  container.addEventListener('touchcancel',endDrag);
+  // mouse (desktop)
+  container.addEventListener('mousedown',(e)=>{ if(e.button!==0) return; start(e.target,e.clientX,e.clientY); });
+  window.addEventListener('mousemove',(e)=>move(e.clientX,e.clientY,e));
+  window.addEventListener('mouseup',endDrag);
+  // stop the press-and-hold from opening the iOS text menu / context menu on a card
+  container.addEventListener('contextmenu',(e)=>{ if(dragBlock || timer){ e.preventDefault(); } });
+  // a drag must not count as a tap (which would reopen a saved card)
+  container.addEventListener('click',(e)=>{ if(justDragged || dragBlock){ e.stopImmediatePropagation(); e.preventDefault(); } }, true);
 })();
 </script>
 
