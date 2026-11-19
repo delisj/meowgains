@@ -3,6 +3,7 @@
 <head>
 <meta name="theme-color" content="#FF6FA5">
 <meta name="app-version" content="2.0.0">
+<meta name="app-build" content="2">
 <style>html{background:#FFF0F5;}</style>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -6256,7 +6257,7 @@ $('whatsNewGotIt').addEventListener('click', ()=>{
 // while the app stays open (phones keep it alive for days), notice when a newer copy has been uploaded
 let lastUpdateCheck = 0;
 async function checkForNewVersion(){
-  if(Date.now() - lastUpdateCheck < 10*60*1000) return;
+  if(Date.now() - lastUpdateCheck < 3*60*1000) return;
   if(navigator.onLine === false) return;
   lastUpdateCheck = Date.now();
   try{
@@ -6264,7 +6265,10 @@ async function checkForNewVersion(){
     if(!res.ok) return;
     const text = await res.text();
     const m = text.match(/<meta name="app-version" content="([^"]+)"/);
-    if(m && m[1] !== APP_VERSION) $('updateBar').style.display = 'flex';
+    const mb = text.match(/<meta name="app-build" content="([^"]+)"/);
+    const myBuild = (document.querySelector('meta[name="app-build"]') || {}).content || '';
+    // the visible version can stay 2.0; the hidden build number is what flags a fresh upload
+    if((m && m[1] !== APP_VERSION) || (mb && mb[1] !== myBuild)) $('updateBar').style.display = 'flex';
   }catch(e){}
 }
 $('updateBarBtn').addEventListener('click', ()=>{
