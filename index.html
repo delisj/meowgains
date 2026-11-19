@@ -889,7 +889,7 @@
     padding:0;
     margin-right:12px;
   }
-  .save-day-as-preset-btn{
+  .save-day-as-preset-btn, .add-to-day-btn{
     display:block;
     width:100%;
     margin-top:6px;
@@ -2905,7 +2905,7 @@ function takeWorkouts(pred){
 async function restoreWorkouts(removed){
   removed.slice().sort((a,b)=>a.i-b.i).forEach(r=>{ if(!workouts.some(x=>x.id===r.w.id)) workouts.splice(Math.min(r.i, workouts.length), 0, r.w); });
   await saveWorkouts();
-  renderHistory(); renderOverview();
+  renderHistoryKeepPlace(); renderOverview();
   showToast('Restored 🐾');
 }
 
@@ -4435,7 +4435,7 @@ function attachDeleteHandlers(container){
       const label = entry ? entry.exercise : 'this entry';
       const removed = takeWorkouts(w=>w.id === btn.dataset.id);
       await saveWorkouts();
-      renderHistory();
+      renderHistoryKeepPlace();
       renderOverview();
       showUndo(`Deleted ${label}`, ()=>restoreWorkouts(removed));
     });
@@ -4554,7 +4554,7 @@ $('editSaveBtn').addEventListener('click', async ()=>{
   await saveWorkouts();
   clearRunningTimersIn($('editSetsContainer'));
   $('editOverlay').classList.remove('show');
-  renderHistory();
+  renderHistoryKeepPlace();
   renderOverview();
   renderProgressExerciseList();
   showToast('Entry updated 🎀');
@@ -4585,7 +4585,7 @@ function attachDeleteDayHandlers(container){
       if(count === 0) return;
       const removed = takeWorkouts(w => w.date === date);
       await saveWorkouts();
-      renderHistory();
+      renderHistoryKeepPlace();
       renderOverview();
       showUndo(`Deleted ${formatDate(date)} (${count} exercise${count===1?'':'s'})`, ()=>restoreWorkouts(removed));
     });
@@ -4593,6 +4593,26 @@ function attachDeleteDayHandlers(container){
 }
 
 // lets a past day in History become a reusable preset, without retyping every exercise
+// opens the Log tab on a past day so a forgotten or accidentally deleted exercise can be added back
+function attachAddToDayHandlers(container){
+  container.querySelectorAll('.add-to-day-btn').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const blocks = Array.from($('exerciseBlocksContainer').querySelectorAll('.exercise-block'));
+      const busy = blocks.some(b=>b.dataset.savedEntryId || b.querySelector('.exercise-input').value.trim()) || $('titleInput').value.trim() || $('notesInput').value.trim();
+      if(busy){ showToast('Finish or discard the workout in Log first, then try again 🐾'); return; }
+      const date = btn.dataset.date;
+      $('dateInput').value = date;
+      $('dateInput').dispatchEvent(new Event('input',{bubbles:true}));
+      $('dateInput').dispatchEvent(new Event('change',{bubbles:true}));
+      const tab = document.querySelector('.tab[data-view="log"]') || document.querySelector('[data-view="log"]');
+      if(tab) tab.click();
+      showToast(`Adding to ${formatDate(date)}, type the exercise below 🐾`);
+      setTimeout(()=>{ try{ const f=$('exerciseBlocksContainer').querySelector('.exercise-input'); if(f) f.scrollIntoView({block:'center'}); }catch(e){} }, 150);
+    });
+  });
+}
+
 function attachSaveDayAsPresetHandlers(container){
   container.querySelectorAll('.save-day-as-preset-btn').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
@@ -4630,6 +4650,22 @@ function totalSessionsLine(){
   const totalDays = new Set(workouts.map(w=>w.date)).size;
   if(totalDays === 0) return '';
   return `<div class="history-total-count">🐾 ${totalDays} session${totalDays===1?'':'s'} logged so far</div>`;
+}
+
+// re-draws History after a delete/edit/undo but keeps open days and months open and the scroll spot, so you stay where you were
+function renderHistoryKeepPlace(){
+  const list=$('historyList'); let open=[], y=0;
+  try{
+    y=window.scrollY||0;
+    list.querySelectorAll('.date-group.expanded').forEach(g=>{ const t=g.querySelector('.date-title'); if(t) open.push('d|'+t.textContent.trim()); });
+    list.querySelectorAll('.day-session-group.expanded').forEach(g=>{ const t=g.querySelector('.day-session-date'); if(t) open.push('s|'+t.textContent.trim()); });
+  }catch(e){}
+  renderHistory();
+  try{
+    list.querySelectorAll('.date-group').forEach(g=>{ const t=g.querySelector('.date-title'); if(t && open.includes('d|'+t.textContent.trim())) g.classList.add('expanded'); });
+    list.querySelectorAll('.day-session-group').forEach(g=>{ const t=g.querySelector('.day-session-date'); if(t && open.includes('s|'+t.textContent.trim())) g.classList.add('expanded'); });
+    window.scrollTo(0,y);
+  }catch(e){}
 }
 
 function renderHistory(){
@@ -4711,6 +4747,7 @@ function renderHistoryByMonth(){
           </div>
           <div class="day-session-body">
             ${exercisesHtml}
+            <button class="add-to-day-btn" data-date="${date}" type="button">➕ Add an exercise to this day</button>
           </div>
         </div>
       `;
@@ -4738,6 +4775,7 @@ function renderHistoryByMonth(){
   attachCollapseHandlers(list);
   attachDaySessionCollapseHandlers(list);
   attachDeleteDayHandlers(list);
+  attachAddToDayHandlers(list);
 }
 
 // how many recent days show before "Show older workouts" is needed, resets on new search
@@ -4818,6 +4856,7 @@ function renderHistoryByDate(){
         </div>
         <div class="date-body">
           ${sessionsHtml}
+          <button class="add-to-day-btn" data-date="${date}" type="button">➕ Add an exercise to this day</button>
           <button class="save-day-as-preset-btn" data-date="${date}" type="button">💾 Save this day as a preset</button>
         </div>
       </div>
@@ -4828,6 +4867,7 @@ function renderHistoryByDate(){
   attachEditHandlers(list);
   attachCollapseHandlers(list);
   attachSaveDayAsPresetHandlers(list);
+  attachAddToDayHandlers(list);
   attachDeleteDayHandlers(list);
 
   if(hasMore){
@@ -6075,7 +6115,7 @@ function renderStreak(){
   document.getElementById('streakFlame').textContent = streak>=8 ? '🔥🔥🔥' : streak>=4 ? '🔥🔥' : streak>0 ? '🔥' : '🐾';
   document.getElementById('streakTitle').textContent = streak>0
     ? streak+' week streak'
-    : (workouts.length ? 'Start a new streak' : 'Your first workout starts it');
+    : (workouts.length ? 'Build your streak' : 'Your first workout starts it');
   const pet = isDog ? 'doggo' : 'kitty';
   const left=Math.max(0,goal-done);
   let msg;
