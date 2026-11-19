@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta name="theme-color" content="#FF6FA5">
+<meta name="app-version" content="2.0.0">
 <style>html{background:#FFF0F5;}</style>
 <link rel="manifest" href="manifest.json">
 <meta charset="UTF-8">
@@ -445,8 +446,9 @@
     text-align:center;
     font-weight:700;
     cursor:pointer;
-    border-radius:8px;
-    padding:2px 0;
+    border-radius:50%;
+    border:2px dashed var(--line);
+    width:24px; height:24px; line-height:20px; padding:0; box-sizing:border-box;
   }
   .set-row-time .set-num{ cursor:default; }
   .set-row input[data-prev]:placeholder-shown::placeholder{ color:var(--pink-deep); opacity:0.75; }
@@ -714,6 +716,58 @@
   }
   .btn-add-exercise::before{ content:"🐾 "; }
 
+  .discard-link{
+    display:block; margin:12px auto 0; background:none; border:none; cursor:pointer;
+    color:var(--ink-dim); font-size:12px; font-weight:700; text-decoration:underline; padding:8px 12px;
+  }
+  /* exercises save and celebrate by themselves now, so the Log tab no longer needs a ✓ per exercise */
+  #exerciseBlocksContainer .done-toggle-btn{ display:none; }
+  .collapse-block-btn{ color:var(--pink-deep); font-size:18px; padding:4px 6px; transition:transform .15s; pointer-events:none; }
+  .exercise-block.collapsed .collapse-block-btn{ transform:rotate(-90deg); }
+  .rename-btn{ display:none; background:none; border:none; color:var(--pink-deep); font-size:15px; padding:4px 6px; cursor:pointer; }
+  .exercise-block .block-num.named, .exercise-block.collapsed .block-num.named{ font-size:14px; font-weight:800; color:var(--ink); text-transform:none; letter-spacing:0; }
+  .more-links{ display:none; gap:16px; margin-top:4px; }
+  .more-link{ background:none; border:none; color:var(--pink-deep); font-size:12px; font-weight:700; text-decoration:underline; cursor:pointer; padding:8px 0; }
+  #exerciseBlocksContainer .more-links{ display:flex; }
+  #exerciseBlocksContainer .exercise-block.name-set .rename-btn{ display:inline-block; }
+  #exerciseBlocksContainer .exercise-block.name-set:not(.editing-name) .name-part{ display:none; }
+  #exerciseBlocksContainer .exercise-block:not(.show-note) .note-part{ display:none; }
+  #exerciseBlocksContainer .exercise-block:not(.show-time) .timebased-label{ display:none; }
+  #exerciseBlocksContainer .exercise-block.show-note .more-link[data-more="note"],
+  #exerciseBlocksContainer .exercise-block.show-time .more-link[data-more="time"]{ display:none; }
+  #exerciseBlocksContainer .exercise-block.show-note.show-time .more-links{ display:none; }
+  .session-summary{ cursor:pointer; font-weight:800; font-size:14px; color:var(--ink); display:flex; justify-content:space-between; align-items:center; }
+  .session-summary span.edit{ color:var(--pink-deep); font-size:13px; }
+  #sessionCard.folded > *:not(.session-summary){ display:none; }
+  #sessionCard .session-summary{ margin:-2px 0 10px; }
+  #sessionCard.folded .session-summary{ margin-bottom:0; }
+  /* no tiny up/down counters on the number boxes: you just type the number */
+  .set-row input[type=number]::-webkit-inner-spin-button,
+  .set-row input[type=number]::-webkit-outer-spin-button{ -webkit-appearance:none; margin:0; }
+  .set-row input[type=number]{ -moz-appearance:textfield; appearance:textfield; }
+  /* deleting an exercise on the Log tab: swipe the card left, or use the small link inside it */
+  #exerciseBlocksContainer, #planBlocksContainer{ position:relative; }
+  #exerciseBlocksContainer .exercise-block, #planBlocksContainer .exercise-block{ touch-action:pan-y; }
+  #exerciseBlocksContainer .remove-block-btn, #planBlocksContainer .remove-block-btn{ display:none !important; }
+  .remove-link{ display:none; background:none; border:none; color:var(--ink-dim); font-size:12px; font-weight:700; text-decoration:underline; cursor:pointer; padding:8px 0 0; margin-top:6px; }
+  #exerciseBlocksContainer .remove-link, #planBlocksContainer .remove-link{ display:block; }
+  .swipe-bg{
+    position:absolute; left:0; right:0; border-radius:20px; background:#E0566B; color:#fff;
+    display:flex; align-items:center; justify-content:flex-end; padding-right:22px;
+    font-weight:800; font-size:14px; pointer-events:none;
+  }
+  .whatsnew-banner, .update-bar{
+    background:var(--bg-card); border:2px solid var(--pink); border-radius:16px; padding:10px 14px; margin-bottom:14px; font-size:12.5px; color:var(--ink);
+  }
+  .update-bar{
+    position:sticky; top:8px; z-index:40; display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:var(--pink-deep); color:#fff; border-color:var(--pink-deep); font-weight:800; font-size:13px; margin:0 auto 10px; max-width:480px;
+  }
+  .update-bar button{ background:#fff; color:var(--pink-deep); border:none; border-radius:12px; padding:6px 14px; font-weight:800; cursor:pointer; }
+  .tips-list{ margin:10px 0 0; padding-left:18px; font-size:12.5px; color:var(--ink); line-height:1.5; }
+  .tips-list li{ margin-bottom:6px; }
+  .version-line{ text-align:center; font-size:11px; color:var(--ink-dim); margin:6px 0 10px; }
+  .sync-badge{ font-size:10px; font-weight:700; color:var(--ink-dim); white-space:nowrap; }
   .btn-clear-form{
     display:block;
     width:100%;
@@ -803,18 +857,11 @@
     cursor:pointer;
   }
   .delete-day-btn{
-    display:block;
-    width:100%;
-    margin-top:6px;
-    background:none;
-    border:2px dashed #E0566B;
-    color:#E0566B;
-    font-size:12px;
-    font-weight:800;
-    padding:10px;
-    border-radius:14px;
-    cursor:pointer;
+    background:none; border:none; cursor:pointer;
+    font-size:22px; line-height:1; padding:8px 10px; margin:-6px 0;
+    border-radius:12px; flex:none;
   }
+  .delete-day-btn:active{ background:rgba(230,76,136,0.15); }
 
   .empty{
     text-align:center;
@@ -1242,6 +1289,15 @@
     font-weight:700;
   }
 
+  .undo-bar{
+    position:fixed; left:50%; bottom:24px; transform:translateX(-50%) translateY(30px);
+    display:flex; align-items:center; gap:12px; max-width:92vw;
+    background:var(--ink); color:#fff; padding:10px 14px; border-radius:20px;
+    font-size:13px; font-weight:700; opacity:0; pointer-events:none;
+    transition:opacity .2s, transform .2s; z-index:60;
+  }
+  .undo-bar.show{ opacity:1; pointer-events:auto; transform:translateX(-50%) translateY(0); }
+  .undo-bar button{ background:var(--pink-deep); color:#fff; border:none; border-radius:12px; padding:7px 14px; font-weight:800; font-size:13px; cursor:pointer; }
   .toast{
     position:fixed;
     bottom:80px;
@@ -1307,7 +1363,7 @@
     background:var(--bg-card);
     width:100%;
     max-width:480px;
-    max-height:85vh;
+    max-height:78vh;
     overflow-y:auto;
     border-radius:26px 26px 0 0;
     padding:14px 20px 28px;
@@ -1318,6 +1374,17 @@
   @keyframes settings-slide-up{
     from{ transform:translateY(40px); opacity:0; }
     to{ transform:translateY(0); opacity:1; }
+  }
+  .settings-topbar{
+    position:sticky; top:-14px; z-index:5; background:var(--bg-card);
+    margin:-14px -20px 12px; padding:14px 20px 10px; border-radius:26px 26px 0 0;
+    cursor:pointer;
+  }
+  .settings-topbar .settings-handle{ margin-bottom:10px; }
+  .settings-topbar-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .settings-x{
+    width:38px; height:38px; border-radius:50%; border:2px solid var(--line);
+    background:none; color:var(--pink-deep); font-size:18px; font-weight:800; cursor:pointer; flex:none;
   }
   .settings-handle{
     width:40px;
@@ -1674,7 +1741,7 @@
       <button id="dataMenuToggle" class="theme-toggle" type="button" title="Settings &amp; backup">⚙️</button>
     </div>
   </div>
-  <div class="sub" id="brandTagline">meow much did you lift today? ✨</div>
+  <div class="sub" id="brandTagline">✨ meow much did you lift today? ✨</div>
 </header>
 
 <main>
@@ -1688,6 +1755,10 @@
 
   <!-- LOG VIEW -->
   <section id="view-log" class="view active">
+    <div class="whatsnew-banner" id="whatsNewBanner" style="display:none;">
+      <div><b>✨ New in 2.0</b><br>Swipe a card left to delete it · hold a card to reorder · tap a set's number for a warm-up · exercises save as you type.</div>
+      <div class="backup-banner-actions"><button type="button" id="whatsNewGotIt">Got it</button></div>
+    </div>
     <div class="a2hs-banner" id="a2hsBanner" style="display:none;">
       <div id="a2hsText"></div>
       <div class="backup-banner-actions">
@@ -1713,7 +1784,8 @@
       </div>
     </div>
     <img id="logKittyImg" class="log-kitty-img" style="display:none;" alt="">
-    <div class="card">
+    <div class="card" id="sessionCard">
+      <div class="session-summary" id="sessionSummary"></div>
       <label>Date</label>
       <div class="date-input-wrap">
         <input type="date" id="dateInput">
@@ -1753,7 +1825,7 @@
 
     <button class="btn btn-ghost" id="saveAsPresetBtn" type="button">✏ Save as preset</button>
     <button class="btn btn-primary" id="finishDayBtn" type="button" style="margin-top:10px;">💅 Complete workout</button>
-    <button class="btn-clear-form" id="clearFormBtn" type="button" style="margin-top:10px;">🐾🧹 Clear and start a new workout</button>
+    <button class="discard-link" id="clearFormBtn" type="button">🗑️ Discard</button>
   </section>
 
   <!-- PLAN VIEW -->
@@ -1779,6 +1851,7 @@
     <button class="btn-add-exercise" id="addPlanExerciseBtn" type="button">+ Add another exercise</button>
 
     <button class="btn btn-primary" id="savePlanBtn" type="button">✏ Save preset</button>
+    <button class="discard-link" id="discardPlanDraftBtn" type="button">🗑️ Discard</button>
   </section>
 
   <!-- HISTORY VIEW -->
@@ -1911,6 +1984,8 @@
 </main>
 
 <div class="toast" id="toast"></div>
+<div class="update-bar" id="updateBar" style="display:none;"><span>✨ New version ready</span><button type="button" id="updateBarBtn">Refresh</button></div>
+<div class="undo-bar" id="undoBar"><span id="undoBarText"></span><button type="button" id="undoBarBtn">Undo</button></div>
 
 <div class="pr-overlay" id="editOverlay">
   <div class="pr-card" style="max-width:320px; text-align:left;">
@@ -1925,8 +2000,13 @@
 
 <div class="settings-overlay" id="settingsOverlay">
   <div class="settings-sheet">
-    <div class="settings-handle"></div>
-    <div class="pr-title" style="font-size:17px; text-align:left; margin-bottom:14px;">⚙️ Settings &amp; backup</div>
+    <div class="settings-topbar" id="settingsTopbar">
+      <div class="settings-handle"></div>
+      <div class="settings-topbar-row">
+        <div class="pr-title" style="font-size:17px; text-align:left; margin:0;">⚙️ Settings &amp; backup</div>
+        <button type="button" class="settings-x" id="settingsXBtn" aria-label="Close settings">✕</button>
+      </div>
+    </div>
 
     <div class="settings-section">
       <div class="settings-section-title" id="kittySectionTitle">Your Kitty</div>
@@ -2006,11 +2086,29 @@
       </div>
     </div>
 
+    <div class="settings-section">
+      <div class="section-title collapsible-title" id="tipsToggle">
+        <span>💡 Tips</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div id="tipsBody" style="display:none;">
+        <ul class="tips-list">
+          <li>Swipe an exercise card <b>left</b> to delete it. You get 5 seconds to undo.</li>
+          <li><b>Press and hold</b> a card, then drag it to reorder.</li>
+          <li>Tap a set's <b>number</b> to mark it as a warm-up (W).</li>
+          <li>Tap the <b>title row</b> of a card, or the <b>date bar</b>, to fold it.</li>
+          <li>Pick an exercise you've done before and it fills in <b>last time's sets</b>.</li>
+          <li>Everything <b>saves as you type</b>. Complete workout just clears the form.</li>
+        </ul>
+      </div>
+    </div>
+
     <div class="settings-section danger-zone">
       <div class="settings-section-title">Danger Zone</div>
       <button class="btn-danger" id="clearAllDataBtn" type="button">🗑️ Clear all data</button>
     </div>
 
+    <div class="version-line" id="versionLine"></div>
     <button class="btn btn-ghost" id="settingsCloseBtn" type="button" style="margin-top:4px;">Close</button>
   </div>
 </div>
@@ -2203,7 +2301,7 @@ function applySpeciesUI(){
   document.body.classList.toggle('dawg', isDog);
   $('speciesToggle').textContent = isDog ? '🐱' : '🐶';
   $('brandTitle').innerHTML = isDog ? 'Woof<span> Gains</span>' : 'Meow<span> Gains</span>';
-  $('brandTagline').textContent = isDog ? 'woof much did you lift today? ✨' : 'meow much did you lift today? ✨';
+  $('brandTagline').textContent = isDog ? '✨ woof much did you lift today? ✨' : '✨ meow much did you lift today? ✨';
   $('logTabIcon').textContent = isDog ? '🐶' : '🐱';
   $('kittySectionTitle').textContent = isDog ? 'Your Doggo' : 'Your Kitty';
   $('kittyFreqLabel').textContent = isDog ? 'Random doggos in the Log tab' : 'Random kitties in the Log tab';
@@ -2406,6 +2504,17 @@ $('settingsCloseBtn').addEventListener('click', ()=>{
 $('settingsOverlay').addEventListener('click', (e)=>{
   if(e.target.id === 'settingsOverlay') $('settingsOverlay').classList.remove('show');
 });
+
+
+// closing the settings sheet: the top bar (tap or swipe down), the X, the dimmed area, or Escape
+(function(){
+  const close = ()=> $('settingsOverlay').classList.remove('show');
+  $('settingsTopbar').addEventListener('click', close);
+  let y0=null;
+  $('settingsTopbar').addEventListener('touchstart',(e)=>{ y0=e.touches[0].clientY; },{passive:true});
+  $('settingsTopbar').addEventListener('touchend',(e)=>{ if(y0!==null && e.changedTouches[0].clientY - y0 > 40) close(); y0=null; });
+  document.addEventListener('keydown',(e)=>{ if(e.key==='Escape') close(); });
+})();
 
 $('kittyFrequencySelect').addEventListener('change', ()=>{
   kittyFrequency = $('kittyFrequencySelect').value;
@@ -2693,6 +2802,36 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'), 1600);
 }
 
+// ---- Undo for deletes ----
+let undoTimer=null, undoFn=null;
+function showUndo(msg, fn){
+  undoFn = fn;
+  document.getElementById('undoBarText').textContent = msg;
+  const bar = document.getElementById('undoBar');
+  bar.classList.add('show');
+  clearTimeout(undoTimer);
+  undoTimer = setTimeout(()=>{ bar.classList.remove('show'); undoFn=null; }, 5000);
+}
+document.addEventListener('click',(e)=>{
+  if(!e.target || e.target.id!=='undoBarBtn') return;
+  const fn = undoFn; undoFn = null;
+  clearTimeout(undoTimer);
+  document.getElementById('undoBar').classList.remove('show');
+  if(fn) fn();
+});
+// removes workouts matching a predicate and returns them with their original positions
+function takeWorkouts(pred){
+  const removed=[];
+  workouts = workouts.filter((w,i)=>{ if(pred(w)){ removed.push({w,i}); return false; } return true; });
+  return removed;
+}
+async function restoreWorkouts(removed){
+  removed.slice().sort((a,b)=>a.i-b.i).forEach(r=>{ if(!workouts.some(x=>x.id===r.w.id)) workouts.splice(Math.min(r.i, workouts.length), 0, r.w); });
+  await saveWorkouts();
+  renderHistory(); renderOverview();
+  showToast('Restored 🐾');
+}
+
 async function loadData(){
   try{
     const w = localStorage.getItem('meowgains_workouts');
@@ -2880,6 +3019,7 @@ document.querySelectorAll('.tab').forEach(tab=>{
     if(tab.dataset.view === 'plan'){
       renderPlanList();
       maybeShowPlanSuggestionPopup();
+      if(planDraftRestoredNote){ planDraftRestoredNote = false; showToast('Restored your unsaved preset 🐾'); }
     }
     if(tab.dataset.view === 'log') maybeShowLogKitty();
   });
@@ -2999,10 +3139,7 @@ function renumberSetRows(rows){
 function attachWarmupToggle(row, onChange){
   const el = row.querySelector('.set-num');
   el.title = 'Tap to mark as a warm-up set';
-  el.addEventListener('click', ()=>{
-    setWarmupOnRow(row, !isWarmupRow(row));
-    onChange();
-  });
+  el.addEventListener('click', ()=>{ setWarmupOnRow(row, !isWarmupRow(row)); onChange(); });
 }
 
 function addSetRowToBlock(block, val1='', val2='', isWarmup=false){
@@ -3066,6 +3203,7 @@ document.addEventListener('focusin', (e)=>{
 });
 
 function applyPlaceholdersToBlock(block){
+  syncMoreParts(block);
   const name = block.querySelector('.exercise-input').value.trim();
   const isTime = block.querySelector('.timebased-checkbox').checked;
   const prevEntry = name ? getPreviousEntryForExercise(name) : null;
@@ -3116,6 +3254,8 @@ function selectExerciseForBlock(block, name){
       rebuildSetsForBlock(block);
     }
   }
+  settleBlockName(block);
+  maybePrefillFromHistory(block);
   scheduleDraftSave();
 }
 
@@ -3187,10 +3327,30 @@ function updateCategoryRowVisibilityForBlock(block){
 // remove-block buttons stay hidden on the Log tab by default (to avoid accidental
 // taps mid-workout) until "⚙️ Remove exercises" is toggled on. The Plan tab always
 // shows them since building a preset is a more deliberate, lower-frequency task.
+function refreshBlockTitle(block){
+  const c = block.parentElement; if(!c) return;
+  const idx = Array.from(c.querySelectorAll('.exercise-block')).indexOf(block) + 1;
+  const name = block.querySelector('.exercise-input').value.trim();
+  const num = block.querySelector('.block-num');
+  num.textContent = name ? `${idx}. ${name}` : 'Exercise ' + idx;
+  num.classList.toggle('named', !!name);
+}
+// the name field folds away into the title once an exercise has been chosen
+function settleBlockName(block){
+  const name = block.querySelector('.exercise-input').value.trim();
+  block.classList.toggle('name-set', !!name);
+  if(name) block.classList.remove('editing-name');
+  refreshBlockTitle(block);
+}
+// note / time-based parts stay tucked away unless they're actually in use
+function syncMoreParts(block){
+  if(block.querySelector('.exercise-notes-input').value.trim()) block.classList.add('show-note');
+  if(block.querySelector('.timebased-checkbox').checked) block.classList.add('show-time');
+}
 function updateBlockNumbers(container){
   const blocks = container.querySelectorAll('.exercise-block');
-  blocks.forEach((b,i)=>{
-    b.querySelector('.block-num').textContent = 'Exercise ' + (i+1);
+  blocks.forEach((b)=>{
+    refreshBlockTitle(b);
     b.querySelector('.remove-block-btn').style.display = blocks.length > 1 ? 'block' : 'none';
   });
 }
@@ -3202,17 +3362,18 @@ function createExerciseBlock(){
     <div class="block-header">
       <div class="block-title-wrap">
         <div class="block-num">Exercise</div>
+        <button class="rename-btn" type="button" title="Change exercise" aria-label="Change exercise">✎</button>
       </div>
       <div class="block-header-actions">
-        <button class="collapse-block-btn" type="button" title="Collapse for tidiness">▾</button>
         <button class="done-toggle-btn" type="button" title="Mark this exercise done">✓</button>
         <button class="remove-block-btn" type="button" title="Remove this exercise">🗑️</button>
+        <button class="collapse-block-btn" type="button" title="Fold or unfold this exercise">▾</button>
       </div>
     </div>
     <div class="block-summary" style="display:none;"></div>
     <div class="block-body">
-      <label>Exercise</label>
-      <div class="exercise-search-wrap">
+      <label class="name-part">Exercise</label>
+      <div class="exercise-search-wrap name-part">
         <input type="text" class="exercise-input" placeholder="🐾 Search or type an exercise..." autocomplete="off">
         <div class="exercise-search-results"></div>
       </div>
@@ -3228,12 +3389,18 @@ function createExerciseBlock(){
         ⏱️ Time-based (track duration instead of weight, e.g. plank, cardio)
       </label>
 
-      <label>Sets <span style="font-weight:500; font-size:11px; color:var(--ink-dim);">(tap a number to mark a warm-up set)</span></label>
+      <label>Sets <span style="font-weight:500; font-size:11px; color:var(--ink-dim);">(tap a set's number to mark it as a warm-up)</span></label>
       <div class="sets-container"></div>
       <button class="btn-add-set add-set-btn" type="button">+ add another set</button>
 
-      <label>Notes</label>
-      <input type="text" class="exercise-notes-input" placeholder="e.g. felt tight in left shoulder">
+      <label class="note-part">Notes</label>
+      <input type="text" class="exercise-notes-input note-part" placeholder="e.g. felt tight in left shoulder">
+
+      <div class="more-links">
+        <button type="button" class="more-link" data-more="note">+ note</button>
+        <button type="button" class="more-link" data-more="time">⏱ time-based</button>
+      </div>
+      <button type="button" class="remove-link">🗑️ Delete this exercise</button>
     </div>
   `;
   return block;
@@ -3327,6 +3494,14 @@ function attachBlockContainerEvents(container){
       }
       return;
     }
+    // Log tab: tapping any empty part of an open exercise card (title row, padding, gaps) folds it.
+    // Fields, buttons, set rows and the suggestion list keep doing their own jobs.
+    if(clickedBlock && !e.target.closest('input, textarea, select, button, label, .set-row, .exercise-search-results')){
+      if(clickedBlock.querySelector('.exercise-input').value.trim()){
+        const rec = collapseBlockForSpace(clickedBlock);
+      }
+      return;
+    }
     if(e.target.classList.contains('add-set-btn')){
       const block = e.target.closest('.exercise-block');
       const rows = block.querySelectorAll('.sets-container .set-row');
@@ -3370,46 +3545,29 @@ function attachBlockContainerEvents(container){
         return;
       }
 
-      // Log tab: "Done" saves this one exercise immediately, so you can move on
-      const date = $('dateInput').value || todayStr();
-      const title = $('titleInput').value.trim();
-      const sessionNotes = $('notesInput').value.trim();
-      const sessionWarmup = $('warmupInput').value.trim();
-      const result = buildEntryFromBlock(block, date, title, sessionNotes, [], sessionWarmup);
-      if(!result){
+      // Log tab: the exercise is already kept in History as you type, so ✓ just
+      // finishes it off: makes sure it's saved, folds the card, and celebrates a new record
+      const entry = syncBlockNow(block, true);
+      if(!entry){
         showToast('Add a weight/rep or duration first 🐾');
         return;
       }
-
-      // mark done IMMEDIATELY, synchronously, before any async work below — this closes
-      // a real race condition where a rapid double-tap (a known mobile Safari quirk,
-      // one physical tap registering as two click events) could otherwise slip a second
-      // save through before this block was flagged as already-done, creating a duplicate
       block.classList.add('done');
-
-      workouts = [result.entry, ...workouts];
-      await saveWorkouts();
-      await saveExercises();
-      await saveCustomExercises();
-      await saveCustomCategories();
       renderSuggestions();
+      const title = $('titleInput').value.trim();
       if(title && !titles.includes(title)){
         titles.unshift(title);
         await saveTitles();
         renderTitleSuggestions();
       }
-      renderHistory();
-      renderOverview();
-
-      block.dataset.savedEntryId = result.entry.id;
-      const setCount = result.entry.sets.length;
+      const setCount = entry.sets.length;
       block.querySelector('.block-summary').innerHTML =
-        `<span>✓ ${result.exName}, ${setCount} set${setCount===1?'':'s'} saved</span><button class="undo-done-btn" type="button">↺ Edit</button>`;
-
-      if(result.isRecord){
-        celebrateRecord(result.exName, result.recordValue, result.recordUnit);
+        `<span>✓ ${entry.exercise}, ${setCount} set${setCount===1?'':'s'} saved</span><button class="undo-done-btn" type="button">↺ Edit</button>`;
+      const rec = checkBlockRecord(block);
+      if(rec){
+        celebrateRecord(rec.name, rec.value, rec.unit);
       } else {
-        showToast(`${result.exName} saved 💖`);
+        showToast(`${entry.exercise} saved 💖`);
         maybeShowWarmupReminder();
       }
     }
@@ -3443,29 +3601,29 @@ if($('planBlocksContainer')) attachBlockContainerEvents($('planBlocksContainer')
 // This is the single source of truth for undoing, so both the explicit "↺ Edit" link and
 // tapping the exercise title itself always work, even if one path has an edge-case issue
 async function undoBlockDone(block, container){
-  if(container.id === 'exerciseBlocksContainer' && block.dataset.savedEntryId){
-    workouts = workouts.filter(w=>w.id !== block.dataset.savedEntryId);
-    await saveWorkouts();
-    renderHistory();
-    renderOverview();
-    delete block.dataset.savedEntryId;
-  }
+  // the exercise stays in History; further edits just update that same entry
   block.classList.remove('done');
 }
 
-function collapseBlockForSpace(block){
-  if(block.classList.contains('done') || block.classList.contains('collapsed')) return;
+function collapseBlockForSpace(block, silent){
+  if(block.classList.contains('done') || block.classList.contains('collapsed')) return null;
   const name = block.querySelector('.exercise-input').value.trim();
-  if(!name) return; // nothing entered yet, leave it open
+  if(!name) return null; // nothing entered yet, leave it open
+  // folding never creates an entry by itself, so tapping an untouched preset card logs nothing
+  if(block.dataset.savedEntryId) syncBlockNow(block, true);
+  const rec = checkBlockRecord(block);
+  if(rec && !silent) celebrateRecord(rec.name, rec.value, rec.unit);
   const setCount = block.querySelectorAll('.sets-container .set-row').length;
   block.classList.add('collapsed');
   block.querySelector('.block-summary').innerHTML =
     `<span>${name}, ${setCount} set${setCount===1?'':'s'}</span><span style="font-size:11px; color:var(--pink-deep); text-decoration:underline;">▾ tap to expand</span>`;
+  return rec;
 }
 
 $('addExerciseBtn').addEventListener('click', ()=>{
-  $('exerciseBlocksContainer').querySelectorAll('.exercise-block').forEach(collapseBlockForSpace);
+  const records = Array.from($('exerciseBlocksContainer').querySelectorAll('.exercise-block')).map(b=>collapseBlockForSpace(b, true));
   addExerciseBlock($('exerciseBlocksContainer'));
+  celebrateFirstRecord(records);
 });
 if($('addPlanExerciseBtn')) $('addPlanExerciseBtn').addEventListener('click', ()=> addExerciseBlock($('planBlocksContainer')));
 
@@ -3485,6 +3643,7 @@ function fullResetLogForm(){
   $('warmupInput').value = '';
   $('warmupCard').classList.remove('done');
   warmupReminderShownThisSession = false;
+  unfoldSessionCard();
   resetLogForm();
 }
 
@@ -3520,11 +3679,21 @@ $('warmupDoneBtn').addEventListener('click', ()=>{
   scheduleDraftSave();
 });
 
-$('clearFormBtn').addEventListener('click', ()=>{
-  if(!confirm("Clear everything you've entered and start fresh? This doesn't save anything.")) return;
+$('clearFormBtn').addEventListener('click', async ()=>{
+  const blocks = Array.from($('exerciseBlocksContainer').querySelectorAll('.exercise-block'));
+  const ids = blocks.map(b=>b.dataset.savedEntryId).filter(id=>id && workouts.some(w=>w.id===id));
+  const hasTyped = blocks.some(b=>b.querySelector('.exercise-input').value.trim()) || $('titleInput').value.trim() || $('notesInput').value.trim();
+  if(ids.length === 0 && !hasTyped){ showToast('Nothing to discard 🐾'); return; }
+  const msg = ids.length
+    ? `Discard this workout? The ${ids.length} exercise${ids.length===1?'':'s'} you logged in it will be removed from your History too. (You can undo it for a few seconds.)`
+    : 'Discard what you have entered and start fresh?';
+  if(!confirm(msg)) return;
+  const removed = ids.length ? takeWorkouts(w=>ids.includes(w.id)) : [];
+  if(removed.length) await saveWorkouts();
   fullResetLogForm();
   clearDraft();
-  showToast('Cleared! Fresh start 🐾');
+  if(removed.length) showUndo(`Discarded ${removed.length} exercise${removed.length===1?'':'s'}`, ()=>restoreWorkouts(removed));
+  else showToast('Cleared! Fresh start 🐾');
 });
 
 // handles a block's category row on save: registers the exercise under whatever
@@ -3546,6 +3715,337 @@ function resolveCategoryForBlock(block, exName){
     customExercises.unshift({ name: exName, category });
   }
 }
+
+
+// ===== Live saving: an exercise in the Log tab is kept in History as you edit it =====
+function readBlockForHistory(block){
+  const typedName = block.querySelector('.exercise-input').value.trim();
+  if(!typedName) return null;
+  const isTime = block.querySelector('.timebased-checkbox').checked;
+  const sets = [];
+  block.querySelectorAll('.sets-container .set-row').forEach(r=>{
+    if(isTime){
+      const dur = r.querySelector('.set-duration').value;
+      if(dur !== '') sets.push({ duration: parseFloat(dur)||0 });
+    } else {
+      const w = r.querySelector('.set-weight').value;
+      const reps = r.querySelector('.set-reps').value;
+      if(w !== '' || reps !== ''){
+        const st = { weight: parseDecimal(w)||0, reps: parseInt(reps)||0 };
+        if(isWarmupRow(r)) st.isWarmup = true;
+        sets.push(st);
+      }
+    }
+  });
+  if(sets.length === 0) return null;
+  return { typedName, isTime, sets, exerciseNote: block.querySelector('.exercise-notes-input').value.trim() };
+}
+
+// creates or updates this block's History entry. Synchronous on purpose, so it can also run
+// when the app is being closed. Returns the entry, or null if the block has nothing to save.
+function syncBlockNow(block, force){
+  if(!block || !block.isConnected) return null;
+  if(!block.parentElement || block.parentElement.id !== 'exerciseBlocksContainer') return null;
+  clearTimeout(block._syncTimer);
+  const nameInput = block.querySelector('.exercise-input');
+  // while you're still typing the exercise name, wait until you leave the field
+  if(!force && document.activeElement === nameInput) return null;
+
+  const data = readBlockForHistory(block);
+  const id = block.dataset.savedEntryId;
+  const idx = id ? workouts.findIndex(w=>w.id===id) : -1;
+
+  if(!data){
+    if(idx >= 0){ workouts.splice(idx, 1); saveWorkouts(); }
+    delete block.dataset.savedEntryId;
+    setSyncBadge(block, false);
+    return null;
+  }
+
+  const exName = resolveCanonicalExerciseName(data.typedName);
+  const fields = {
+    date: $('dateInput').value || todayStr(),
+    exercise: exName,
+    sets: data.sets,
+    notes: data.exerciseNote || $('notesInput').value.trim(),
+    warmup: $('warmupInput').value.trim(),
+    unit,
+    title: $('titleInput').value.trim(),
+    timeBased: data.isTime
+  };
+  let entry;
+  if(idx >= 0){
+    entry = Object.assign(workouts[idx], fields);
+  } else {
+    entry = Object.assign({ id: Date.now().toString(36) + Math.random().toString(36).slice(2,6) }, fields);
+    workouts.unshift(entry);
+    block.dataset.savedEntryId = entry.id;
+    maybeShowSwipeHint();
+  }
+  if(block._registeredName !== exName){
+    block._registeredName = exName;
+    if(!exercises.includes(exName)) exercises.unshift(exName);
+    else exercises = [exName, ...exercises.filter(e=>e!==exName)];
+    resolveCategoryForBlock(block, exName);
+    saveExercises(); saveCustomExercises(); saveCustomCategories();
+  }
+  if(idx < 0) applyCardOrderToHistory();
+  saveWorkouts();
+  setSyncBadge(block, true);
+  return entry;
+}
+
+function setSyncBadge(block, on){
+  const wrap = block.querySelector('.block-title-wrap'); if(!wrap) return;
+  let badge = block.querySelector('.sync-badge');
+  if(on){
+    if(!badge){ badge = document.createElement('span'); badge.className = 'sync-badge'; wrap.appendChild(badge); }
+    badge.textContent = '✓ in History';
+  } else if(badge){ badge.remove(); }
+}
+
+// History lists a day's exercises in the order they sit in the workouts list, so after a new
+// entry or a drag we hand the logged entries' slots out again following the cards' order
+function applyCardOrderToHistory(){
+  const blocks = Array.from(document.querySelectorAll('#exerciseBlocksContainer .exercise-block'));
+  const entries = blocks.map(b=>b.dataset.savedEntryId).map(id=>id && workouts.find(w=>w.id===id)).filter(Boolean);
+  if(entries.length < 2) return;
+  const slots = entries.map(e=>workouts.indexOf(e)).sort((a,b)=>a-b);
+  slots.forEach((slot,k)=>{ workouts[slot] = entries[k]; });
+  saveWorkouts();
+}
+
+function scheduleBlockSync(block, delay){
+  if(!block) return;
+  clearTimeout(block._syncTimer);
+  block._syncTimer = setTimeout(()=>syncBlockNow(block), delay || 700);
+  // a moment after you stop typing, check whether this set beat your best, no ✓ needed
+  clearTimeout(block._recTimer);
+  block._recTimer = setTimeout(()=>{
+    if(!block.isConnected) return;
+    const po = document.getElementById('prOverlay');
+    if(po && po.classList.contains('show')) return;
+    syncBlockNow(block, true);
+    const rec = checkBlockRecord(block);
+    if(rec) celebrateRecord(rec.name, rec.value, rec.unit);
+  }, 1800);
+}
+function syncAllLogBlocks(force){
+  document.querySelectorAll('#exerciseBlocksContainer .exercise-block').forEach(b=>syncBlockNow(b, force));
+}
+
+// did this block just beat your best for the exercise? Only reports each new best once.
+function checkBlockRecord(block){
+  const id = block.dataset.savedEntryId;
+  const entry = id && workouts.find(w=>w.id===id);
+  if(!entry) return null;
+  // only a real set counts: weight AND at least 1 rep (or a duration), and not a warm-up
+  const real = entry.timeBased
+    ? entry.sets.filter(st=>(st.duration||0) > 0)
+    : entry.sets.filter(st=>!st.isWarmup && (st.weight||0) > 0 && (st.reps||0) >= 1);
+  if(real.length === 0) return null;
+  const prior = workouts.filter(w=>w.exercise===entry.exercise && w.id!==id);
+  if(prior.length === 0) return null;
+  let best = 0;
+  prior.forEach(w=>{ const v = getEntryMetric(w).value; if(v > best) best = v; });
+  const value = entry.timeBased ? Math.max(...real.map(st=>st.duration||0)) : Math.max(...real.map(st=>st.weight||0));
+  const celebrated = parseFloat(block.dataset.celebrated || '0');
+  if(value > best && value > celebrated){
+    block.dataset.celebrated = String(value);
+    return { name: entry.exercise, value, unit: entry.timeBased ? 's' : (entry.unit || unit) };
+  }
+  return null;
+}
+function celebrateFirstRecord(records){
+  const r = records.find(Boolean);
+  if(r) celebrateRecord(r.name, r.value, r.unit);
+  return !!r;
+}
+
+// Picking an exercise you've done before fills the card with a copy of last time's working sets
+// and logs it as a NEW entry for today. Earlier sessions are never touched.
+function maybePrefillFromHistory(block){
+  if(!block || !block.parentElement || block.parentElement.id !== 'exerciseBlocksContainer') return;
+  if(block._prefilled || block.dataset.savedEntryId) return;
+  const typed = block.querySelector('.exercise-input').value.trim();
+  if(!typed) return;
+  const prev = getPreviousEntryForExercise(resolveCanonicalExerciseName(typed));
+  if(!prev) return;
+  const hasValues = Array.from(block.querySelectorAll('.set-weight, .set-reps, .set-duration')).some(i=>i.value.trim() !== '');
+  if(hasValues) return;
+  const working = prev.sets.filter(st=>!st.isWarmup);
+  if(working.length === 0) return;
+  block._prefilled = true;
+  block.querySelector('.timebased-checkbox').checked = !!prev.timeBased;
+  block.querySelector('.sets-container').innerHTML = '';
+  working.forEach(st=>{
+    if(prev.timeBased) addSetRowToBlock(block, st.duration != null ? st.duration : '');
+    else addSetRowToBlock(block, st.weight != null ? st.weight : '', st.reps != null ? st.reps : '');
+  });
+  applyPlaceholdersToBlock(block);
+  syncBlockNow(block, true);
+  showToast('Filled in from last time 🐾');
+}
+
+// Removes an exercise card and its History entry. Undo puts the very same card and entry back.
+function deleteBlockWithUndo(block){
+  const container = block.parentElement;
+  if(!container || (container.id !== 'exerciseBlocksContainer' && container.id !== 'planBlocksContainer')) return;
+  let blank = null;
+  if(container.querySelectorAll('.exercise-block').length <= 1){
+    // the last card can't disappear, so it is swapped for a fresh empty one
+    addExerciseBlock(container);
+    blank = container.lastElementChild;
+  }
+  clearRunningTimersIn(block);
+  clearTimeout(block._syncTimer); clearTimeout(block._recTimer);
+  const name = block.querySelector('.exercise-input').value.trim() || 'exercise';
+  const id = block.dataset.savedEntryId;
+  const removed = id ? takeWorkouts(w=>w.id===id) : [];
+  const next = block.nextElementSibling;
+  block.remove();
+  if(removed.length) saveWorkouts();
+  updateBlockNumbers(container);
+  scheduleDraftSave();
+  showUndo(`Deleted ${name}`, async ()=>{
+    if(blank && blank.isConnected && !blank.querySelector('.exercise-input').value.trim()) blank.remove();
+    if(next && next.parentElement === container) container.insertBefore(block, next); else container.appendChild(block);
+    if(removed.length) await restoreWorkouts(removed);
+    applyCardOrderToHistory();
+    updateBlockNumbers(container);
+    scheduleDraftSave();
+  });
+}
+
+// swipe a card to the left to remove it (touch screens)
+[$('exerciseBlocksContainer'), $('planBlocksContainer')].filter(Boolean).forEach(function(c){
+  let blk=null, x0=0, y0=0, dx=0, mode=null, bg=null;
+  function cleanup(){ if(bg){ bg.remove(); bg=null; } }
+  c.addEventListener('touchstart',(e)=>{
+    blk = null; mode = null;
+    if(e.touches.length !== 1 || document.body.classList.contains('is-dragging')) return;
+    if(e.target.closest('input, textarea, select, .exercise-search-results')) return;
+    const b = e.target.closest('.exercise-block');
+    if(!b || b.parentElement !== c) return;
+    blk = b; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dx = 0;
+  },{passive:true});
+  c.addEventListener('touchmove',(e)=>{
+    if(!blk) return;
+    if(document.body.classList.contains('is-dragging')){ blk = null; cleanup(); return; }
+    const t = e.touches[0]; const mx = t.clientX - x0, my = t.clientY - y0;
+    if(mode === null){
+      if(Math.abs(mx) > 12 && Math.abs(mx) > Math.abs(my) * 1.6 && mx < 0){
+        mode = 'swipe';
+        bg = document.createElement('div'); bg.className = 'swipe-bg';
+        bg.style.top = blk.offsetTop + 'px'; bg.style.height = blk.offsetHeight + 'px';
+        c.insertBefore(bg, blk);
+        blk.style.transition = 'none';
+      } else if(Math.abs(my) > 12 || mx > 12){ blk = null; return; }
+      else return;
+    }
+    dx = Math.min(0, mx);
+    blk.style.transform = `translateX(${dx}px)`;
+    const thr = Math.min(110, (blk.offsetWidth || 300) * 0.4);
+    bg.textContent = dx < -thr ? '🗑️ Release to delete' : '🗑️ Delete';
+    if(e.cancelable) e.preventDefault();
+  },{passive:false});
+  function end(){
+    if(!blk || mode !== 'swipe'){ blk = null; mode = null; return; }
+    const b = blk; blk = null; mode = null;
+    const thr = Math.min(110, (b.offsetWidth || 300) * 0.4);
+    window._justSwiped = true; setTimeout(()=>{ window._justSwiped = false; }, 350);
+    b.style.transition = 'transform .18s ease';
+    if(dx < -thr){
+      b.style.transform = 'translateX(-110%)';
+      setTimeout(()=>{ cleanup(); b.style.transform = ''; b.style.transition = ''; deleteBlockWithUndo(b); }, 180);
+    } else {
+      b.style.transform = '';
+      setTimeout(()=>{ cleanup(); b.style.transition = ''; }, 180);
+    }
+  }
+  c.addEventListener('touchend', end);
+  c.addEventListener('touchcancel', end);
+  c.addEventListener('click',(e)=>{ if(window._justSwiped){ e.stopImmediatePropagation(); e.preventDefault(); } }, true);
+  c.addEventListener('click',(e)=>{
+    const rl = e.target.closest && e.target.closest('.remove-link');
+    if(rl) deleteBlockWithUndo(rl.closest('.exercise-block'));
+  });
+});
+
+// one-time tip about the swipe gesture
+function maybeShowSwipeHint(){
+  try{
+    if(localStorage.getItem('meowgains_swipeHintSeen')) return;
+    localStorage.setItem('meowgains_swipeHintSeen','1');
+    setTimeout(()=>showToast('Tip: swipe a card left to delete it 🐾'), 2000);
+  }catch(e){}
+}
+
+// wiring: any edit inside an exercise card schedules a quiet save
+(function(){
+  const c = $('exerciseBlocksContainer');
+  const blockOf = (el)=> el && el.closest ? el.closest('.exercise-block') : null;
+  c.addEventListener('input', (e)=> scheduleBlockSync(blockOf(e.target)));
+  c.addEventListener('change', (e)=> scheduleBlockSync(blockOf(e.target)));
+  // card title follows the exercise name; the name field folds away once you leave it
+  c.addEventListener('input', (e)=>{
+    if(e.target.classList && e.target.classList.contains('exercise-input')){
+      const b = blockOf(e.target); refreshBlockTitle(b);
+      if(!e.target.value.trim()) b.classList.remove('name-set');
+    }
+  });
+  c.addEventListener('focusout', (e)=>{
+    if(e.target.classList && e.target.classList.contains('exercise-notes-input') && !e.target.value.trim()){
+      const nb = blockOf(e.target); nb.classList.remove('show-note'); nb.classList.remove('more-open');
+    }
+  });
+  c.addEventListener('change', (e)=>{
+    if(e.target.classList && e.target.classList.contains('timebased-checkbox') && !e.target.checked){
+      const tb = blockOf(e.target); tb.classList.remove('show-time'); tb.classList.remove('more-open');
+    }
+  });
+  c.addEventListener('focusout', (e)=>{
+    if(!(e.target.classList && e.target.classList.contains('exercise-input'))) return;
+    const b = blockOf(e.target);
+    setTimeout(()=>{
+      if(!b.isConnected || document.activeElement === e.target) return;
+      if(e.target.value.trim()){ settleBlockName(b); maybePrefillFromHistory(b); }
+    }, 250);
+  });
+  c.addEventListener('click', (e)=>{
+    const rb = e.target.closest && e.target.closest('.rename-btn');
+    if(rb){
+      const b = blockOf(rb); b.classList.add('editing-name');
+      const inp = b.querySelector('.exercise-input'); inp.focus(); try{ inp.select(); }catch(err){}
+      return;
+    }
+    const ml = e.target.closest && e.target.closest('.more-link');
+    if(ml){
+      const b = blockOf(ml);
+      if(ml.dataset.more === 'note'){ b.classList.add('show-note'); b.querySelector('.exercise-notes-input').focus(); }
+      else {
+        b.classList.add('show-time');
+        const cb = b.querySelector('.timebased-checkbox');
+        if(!cb.checked){ cb.checked = true; cb.dispatchEvent(new Event('change', { bubbles: true })); }
+      }
+    }
+  });
+  c.addEventListener('focusout', (e)=>{ if(e.target.classList && e.target.classList.contains('exercise-input')) scheduleBlockSync(blockOf(e.target), 250); });
+  // capture phase, so we still know the card after a set row has been removed
+  c.addEventListener('click', (e)=>{
+    if(e.target.closest && e.target.closest('.rm, .add-set-btn, .warm-btn, .set-num, .timebased-checkbox, .exercise-search-results')){
+      scheduleBlockSync(blockOf(e.target));
+    }
+  }, true);
+  ['dateInput','titleInput','notesInput','warmupInput'].forEach(id=>{
+    $(id).addEventListener('input', ()=>{
+      c.querySelectorAll('.exercise-block').forEach(b=>{ if(b.dataset.savedEntryId) scheduleBlockSync(b, 600); });
+    });
+  });
+  // never lose the last few seconds of typing when the app is closed or backgrounded
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') syncAllLogBlocks(true); });
+  window.addEventListener('pagehide', ()=> syncAllLogBlocks(true));
+})();
 
 // gathers everything currently sitting in the exercise blocks and saves it.
 // used by both "Save exercise" and "Complete workout" so neither one can lose data.
@@ -3601,36 +4101,20 @@ function buildEntryFromBlock(block, date, title, sessionNotes, queuedEntries, wa
 // gathers everything currently sitting in the exercise blocks and saves it.
 // used by "Complete workout"; skips any block already saved individually via "Done".
 async function saveCurrentBlocks(){
-  const date = $('dateInput').value || todayStr();
   const title = $('titleInput').value.trim();
-  const sessionNotes = $('notesInput').value.trim();
   const sessionWarmup = $('warmupInput').value.trim();
-  const blocks = Array.from($('exerciseBlocksContainer').querySelectorAll('.exercise-block'))
-    .filter(b => !b.classList.contains('done'));
-
-  const newEntries = [];
-  let anyNewRecord = false;
-  let recordExerciseName = '';
-  let recordValue = 0;
-  let recordUnit = unit;
-
-  blocks.forEach(block=>{
-    const result = buildEntryFromBlock(block, date, title, sessionNotes, newEntries, sessionWarmup);
-    if(!result) return;
-    newEntries.push(result.entry);
-    if(result.isRecord && !anyNewRecord){
-      anyNewRecord = true;
-      recordExerciseName = result.exName;
-      recordValue = result.recordValue;
-      recordUnit = result.recordUnit;
-    }
+  const linked = [];
+  const records = [];
+  Array.from($('exerciseBlocksContainer').querySelectorAll('.exercise-block')).forEach(block=>{
+    const entry = syncBlockNow(block, true);
+    if(entry) linked.push(entry);
+    records.push(checkBlockRecord(block));
   });
 
-  if(newEntries.length === 0){
+  if(linked.length === 0){
     return { newEntries: [], anyNewRecord: false, sessionWarmup };
   }
 
-  workouts = [...newEntries, ...workouts];
   await saveWorkouts();
   await saveExercises();
   await saveCustomExercises();
@@ -3646,7 +4130,12 @@ async function saveCurrentBlocks(){
   renderHistory();
   renderOverview();
 
-  return { newEntries, anyNewRecord, recordExerciseName, recordValue, recordUnit, sessionWarmup };
+  const rec = records.find(Boolean);
+  return {
+    newEntries: linked, anyNewRecord: !!rec,
+    recordExerciseName: rec ? rec.name : '', recordValue: rec ? rec.value : 0, recordUnit: rec ? rec.unit : unit,
+    sessionWarmup
+  };
 }
 
 $('finishDayBtn').addEventListener('click', async ()=>{
@@ -3859,12 +4348,11 @@ function attachDeleteHandlers(container){
       e.stopPropagation();
       const entry = workouts.find(w=>w.id === btn.dataset.id);
       const label = entry ? entry.exercise : 'this entry';
-      if(!confirm(`Delete ${label}? This can't be undone.`)) return;
-      workouts = workouts.filter(w=>w.id !== btn.dataset.id);
+      const removed = takeWorkouts(w=>w.id === btn.dataset.id);
       await saveWorkouts();
       renderHistory();
       renderOverview();
-      showToast('Deleted');
+      showUndo(`Deleted ${label}`, ()=>restoreWorkouts(removed));
     });
   });
 }
@@ -4005,16 +4493,16 @@ function attachCollapseHandlers(container){
 // delete each exercise within that day individually
 function attachDeleteDayHandlers(container){
   container.querySelectorAll('.delete-day-btn').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
+    btn.addEventListener('click', async (ev)=>{
+      ev.stopPropagation();
       const date = btn.dataset.date;
       const count = workouts.filter(w => w.date === date).length;
       if(count === 0) return;
-      if(!confirm(`Delete all ${count} exercise${count===1?'':'s'} logged on ${formatDate(date)}? This can't be undone.`)) return;
-      workouts = workouts.filter(w => w.date !== date);
+      const removed = takeWorkouts(w => w.date === date);
       await saveWorkouts();
       renderHistory();
       renderOverview();
-      showToast('That day has been deleted 🐾');
+      showUndo(`Deleted ${formatDate(date)} (${count} exercise${count===1?'':'s'})`, ()=>restoreWorkouts(removed));
     });
   });
 }
@@ -4132,12 +4620,12 @@ function renderHistoryByMonth(){
             </div>
             <div class="day-session-right">
               <span class="date-volume-mini num">${dayVolume.toLocaleString()}${dayUnitLabel} • ${dayReps.toLocaleString()}r</span>
+              <button class="delete-day-btn" data-date="${date}" type="button" title="Delete this whole day" aria-label="Delete this whole day">🗑️</button>
               <span class="chevron">▾</span>
             </div>
           </div>
           <div class="day-session-body">
             ${exercisesHtml}
-            <button class="delete-day-btn" data-date="${date}" type="button">🗑️ Delete this whole day</button>
           </div>
         </div>
       `;
@@ -4239,13 +4727,13 @@ function renderHistoryByDate(){
           </div>
           <div class="date-header-right">
             <div class="date-volume-mini num">${volume.toLocaleString()}${unitLabel} • ${reps.toLocaleString()}r</div>
+            <button class="delete-day-btn" data-date="${date}" type="button" title="Delete this whole day" aria-label="Delete this whole day">🗑️</button>
             <div class="chevron">▾</div>
           </div>
         </div>
         <div class="date-body">
           ${sessionsHtml}
           <button class="save-day-as-preset-btn" data-date="${date}" type="button">💾 Save this day as a preset</button>
-          <button class="delete-day-btn" data-date="${date}" type="button">🗑️ Delete this whole day</button>
         </div>
       </div>
     `;
@@ -4815,6 +5303,7 @@ function loadPlanIntoLogForm(plan){
     hideExerciseSearchResults(block);
     updateCategoryRowVisibilityForBlock(block);
     applyPlaceholdersToBlock(block);
+    settleBlockName(block);
   });
   if($('exerciseBlocksContainer').children.length === 0){
     addExerciseBlock($('exerciseBlocksContainer'));
@@ -4892,7 +5381,7 @@ $('planSuggestionOverlay').addEventListener('click', (e)=>{
 
 // loads a saved plan into the Plan tab's builder (not the Log tab), so it can be
 // tweaked and re-saved under the same name to update it in place
-function loadPlanIntoBuilder(plan){
+function loadPlanIntoBuilder(plan, noScroll){
   $('planNameInput').value = plan.name;
   $('planBlocksContainer').innerHTML = '';
   plan.exercises.forEach(pe=>{
@@ -4910,7 +5399,7 @@ function loadPlanIntoBuilder(plan){
     addExerciseBlock($('planBlocksContainer'));
   }
   updateBlockNumbers($('planBlocksContainer'));
-  try{ $('planNameInput').scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e){}
+  if(!noScroll){ try{ $('planNameInput').scrollIntoView({ behavior: 'smooth', block: 'center' }); }catch(e){} }
 }
 
 // builds a link that carries a preset's data in the URL itself, so sharing it
@@ -5178,12 +5667,15 @@ function renderPlanList(){
     btn.addEventListener('click', async ()=>{
       const plan = plans.find(p=>p.id === btn.dataset.id);
       if(!plan) return;
-      if(!confirm(`Delete preset "${plan.name}"? This can't be undone.`)) return;
+      const planIndex = plans.findIndex(p=>p.id === btn.dataset.id);
       plans = plans.filter(p=>p.id !== btn.dataset.id);
       await savePlans();
       renderPlanList();
       renderTitleSuggestions();
-      showToast('Preset deleted');
+      showUndo(`Deleted preset "${plan.name}"`, async ()=>{
+        if(!plans.some(p=>p.id===plan.id)) plans.splice(Math.min(planIndex, plans.length), 0, plan);
+        await savePlans(); renderPlanList(); renderTitleSuggestions(); showToast('Restored 🐾');
+      });
     });
   });
 }
@@ -5214,6 +5706,7 @@ $('savePlanBtn').addEventListener('click', async ()=>{
   $('planNameInput').value = '';
   $('planBlocksContainer').innerHTML = '';
   addExerciseBlock($('planBlocksContainer'));
+  clearPlanDraft();
 
   showToast(`Preset "${name}" saved! ✏`);
 });
@@ -5297,7 +5790,9 @@ function gatherLogDraft(){
       timeBased: isTime,
       sets,
       category: categoryVisible ? block.querySelector('.custom-category-select').value : '',
-      exerciseNotes: block.querySelector('.exercise-notes-input').value
+      exerciseNotes: block.querySelector('.exercise-notes-input').value,
+      savedEntryId: block.dataset.savedEntryId || '',
+      celebrated: block.dataset.celebrated || ''
     };
   });
   return {
@@ -5357,6 +5852,10 @@ function restoreDraftIfAny(){
       applyPlaceholdersToBlock(block);
       if(bd.category) block.querySelector('.custom-category-select').value = bd.category;
       if(bd.exerciseNotes) block.querySelector('.exercise-notes-input').value = bd.exerciseNotes;
+      // re-link the card to its entry in History, so editing keeps updating it (never duplicating it)
+      if(bd.savedEntryId && workouts.some(w=>w.id===bd.savedEntryId)){ block.dataset.savedEntryId = bd.savedEntryId; setSyncBadge(block, true); }
+      if(bd.celebrated) block.dataset.celebrated = bd.celebrated;
+      settleBlockName(block);
     });
     updateBlockNumbers($('exerciseBlocksContainer'));
   } else {
@@ -5378,7 +5877,7 @@ $('warmupInput').addEventListener('input', scheduleDraftSave);
 function getLastWorkoutAsPlan(){
   if(!workouts.length) return null;
   const lastDate = workouts.map(w=>w.date).sort().pop();
-  const entries = workouts.filter(w=>w.date===lastDate).slice().reverse(); // saved order
+  const entries = workouts.filter(w=>w.date===lastDate); // History order = the order of your cards
   const seen = new Set(); const exercises = [];
   entries.forEach(w=>{
     const key = (w.exercise||'').toLowerCase();
@@ -5499,6 +5998,122 @@ document.getElementById('a2hsInstallBtn').addEventListener('click', async ()=>{
   document.getElementById('a2hsBanner').style.display='none';
 });
 
+
+// ---- Date, title and notes card: starts open; tap its top bar (or an empty spot) to shrink it to the date ----
+function updateSessionBar(){
+  const folded = $('sessionCard').classList.contains('folded');
+  const d = $('dateInput').value || todayStr();
+  $('sessionSummary').innerHTML = folded
+    ? `<span>📅 ${formatDate(d)}</span><span class="edit">▸</span>`
+    : `<span>📅 Workout details</span><span class="edit">▾</span>`;
+}
+function foldSessionCard(){ $('sessionCard').classList.add('folded'); updateSessionBar(); }
+function unfoldSessionCard(){ $('sessionCard').classList.remove('folded'); updateSessionBar(); }
+$('sessionCard').addEventListener('click', (e)=>{
+  const card = $('sessionCard');
+  if(card.classList.contains('folded')){ unfoldSessionCard(); return; }
+  if(e.target.closest('.session-summary')){ foldSessionCard(); return; }
+  // an empty spot on the open card shrinks it; fields and labels keep doing their own job
+  if(!e.target.closest('input, textarea, select, button, label, .date-input-wrap, .exercise-search-results')) foldSessionCard();
+});
+$('dateInput').addEventListener('input', updateSessionBar);
+$('dateInput').addEventListener('change', updateSessionBar);
+updateSessionBar();
+
+// ---- Preset builder draft: what you type is kept until you save the preset or discard it ----
+let planDraftTimer = null, planDraftRestoredNote = false;
+function gatherPlanDraft(){
+  const blocks = Array.from($('planBlocksContainer').querySelectorAll('.exercise-block')).map(block=>{
+    const isTime = block.querySelector('.timebased-checkbox').checked;
+    const sets = Array.from(block.querySelectorAll('.sets-container .set-row')).map(r=> isTime
+      ? { duration: r.querySelector('.set-duration').value }
+      : { weight: r.querySelector('.set-weight').value, reps: r.querySelector('.set-reps').value, isWarmup: isWarmupRow(r) });
+    return { name: block.querySelector('.exercise-input').value, timeBased: isTime, sets };
+  });
+  return { name: $('planNameInput').value, blocks };
+}
+function savePlanDraftNow(){
+  try{
+    const d = gatherPlanDraft();
+    const hasContent = d.name.trim() || d.blocks.some(b => b.name.trim() || b.sets.some(st => st.weight || st.reps || st.duration));
+    if(hasContent) localStorage.setItem('meowgains_plan_draft', JSON.stringify(d));
+    else localStorage.removeItem('meowgains_plan_draft');
+  }catch(e){}
+}
+function schedulePlanDraftSave(){ clearTimeout(planDraftTimer); planDraftTimer = setTimeout(savePlanDraftNow, 500); }
+function clearPlanDraft(){ clearTimeout(planDraftTimer); try{ localStorage.removeItem('meowgains_plan_draft'); }catch(e){} }
+// returns true if a draft was found and put back into the builder
+function restorePlanDraft(){
+  let d = null;
+  try{ const raw = localStorage.getItem('meowgains_plan_draft'); d = raw ? JSON.parse(raw) : null; }catch(e){ d = null; }
+  if(!d || !d.blocks || !d.blocks.length) return false;
+  loadPlanIntoBuilder({ name: d.name || '', exercises: d.blocks.map(b=>({ name: b.name, timeBased: !!b.timeBased, targetSets: b.sets })) }, true);
+  planDraftRestoredNote = true;
+  return true;
+}
+['input','change','click'].forEach(ev=>{
+  $('planBlocksContainer').addEventListener(ev, schedulePlanDraftSave, true);
+});
+$('planNameInput').addEventListener('input', schedulePlanDraftSave);
+$('addPlanExerciseBtn').addEventListener('click', schedulePlanDraftSave);
+window.addEventListener('pagehide', savePlanDraftNow);
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden') savePlanDraftNow(); });
+$('discardPlanDraftBtn').addEventListener('click', ()=>{
+  const d = gatherPlanDraft();
+  const has = d.name.trim() || d.blocks.some(b => b.name.trim() || b.sets.some(st => st.weight || st.reps || st.duration));
+  if(!has){ showToast('Nothing to discard 🐾'); return; }
+  if(!confirm('Discard this preset draft and start fresh?')) return;
+  $('planNameInput').value = '';
+  $('planBlocksContainer').innerHTML = '';
+  addExerciseBlock($('planBlocksContainer'));
+  clearPlanDraft();
+  showToast('Draft discarded 🐾');
+});
+
+// ---- Version, "new version ready" bar, what's new ----
+const APP_VERSION = (document.querySelector('meta[name="app-version"]') || {}).content || '2.0.0';
+const APP_VERSION_SHORT = APP_VERSION.split('.').slice(0,2).join('.');
+$('versionLine').textContent = 'Meow Gains v' + APP_VERSION_SHORT;
+$('tipsToggle').addEventListener('click', ()=>{
+  const open = $('tipsToggle').classList.toggle('expanded');
+  $('tipsBody').style.display = open ? 'block' : 'none';
+});
+
+// one small notice the first time 2.0 opens for someone who already used the app
+(function(){
+  try{
+    const seen = localStorage.getItem('meowgains_seenVersion');
+    const existingUser = !!localStorage.getItem('meowgains_hasSeenIntro');
+    if(seen !== APP_VERSION_SHORT && existingUser) $('whatsNewBanner').style.display = 'block';
+    else if(seen !== APP_VERSION_SHORT) localStorage.setItem('meowgains_seenVersion', APP_VERSION_SHORT);
+  }catch(e){}
+})();
+$('whatsNewGotIt').addEventListener('click', ()=>{
+  try{ localStorage.setItem('meowgains_seenVersion', APP_VERSION_SHORT); }catch(e){}
+  $('whatsNewBanner').style.display = 'none';
+});
+
+// while the app stays open (phones keep it alive for days), notice when a newer copy has been uploaded
+let lastUpdateCheck = 0;
+async function checkForNewVersion(){
+  if(Date.now() - lastUpdateCheck < 10*60*1000) return;
+  if(navigator.onLine === false) return;
+  lastUpdateCheck = Date.now();
+  try{
+    const res = await fetch('index.html', { cache: 'no-store' });
+    if(!res.ok) return;
+    const text = await res.text();
+    const m = text.match(/<meta name="app-version" content="([^"]+)"/);
+    if(m && m[1] !== APP_VERSION) $('updateBar').style.display = 'flex';
+  }catch(e){}
+}
+$('updateBarBtn').addEventListener('click', ()=>{
+  try{ syncAllLogBlocks(true); saveDraftNow(); savePlanDraftNow(); }catch(e){}
+  location.reload();
+});
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'visible') checkForNewVersion(); });
+setTimeout(checkForNewVersion, 4000);
+
 // ---------- INIT ----------
 (async function init(){
   await loadData();
@@ -5515,7 +6130,8 @@ document.getElementById('a2hsInstallBtn').addEventListener('click', async ()=>{
   if(!restored){
     addExerciseBlock($('exerciseBlocksContainer'));
   }
-  addExerciseBlock($('planBlocksContainer'));
+
+  if(!restorePlanDraft()) addExerciseBlock($('planBlocksContainer'));
   renderPlanList();
   renderSuggestions();
   renderTitleSuggestions();
@@ -5575,6 +6191,7 @@ document.getElementById('a2hsInstallBtn').addEventListener('click', async ()=>{
     dragBlock=null;
     justDragged=true; setTimeout(()=>{ justDragged=false; }, 350);
     updateBlockNumbers(container);
+    applyCardOrderToHistory();
     scheduleDraftSave();
   }
   function start(target, x, y){
