@@ -4,6 +4,10 @@
 <meta name="theme-color" content="#FF6FA5">
 <meta name="app-version" content="2.0.0">
 <style>html{background:#FFF0F5;}</style>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Meow Gains">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="manifest" href="manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -552,7 +556,7 @@
   .exercise-block .block-header, .exercise-block .block-summary, .exercise-block label{ -webkit-user-select:none; user-select:none; }
   .block-title-wrap{ display:flex; align-items:center; gap:8px; min-width:0; }
   .drag-handle{ font-size:20px; line-height:1; color:var(--ink-dim); padding:6px 8px 6px 0; cursor:grab; touch-action:none; user-select:none; -webkit-user-select:none; }
-  .exercise-block.dragging{ opacity:0.9; transform:scale(1.02); box-shadow:0 10px 28px rgba(230,76,136,0.3); border-color:var(--pink-deep); position:relative; z-index:5; }
+  .exercise-block.dragging{ opacity:0.95; box-shadow:0 10px 28px rgba(230,76,136,0.3); border-color:var(--pink-deep); position:relative; z-index:5; }
   .exercise-block.dragging .drag-handle{ cursor:grabbing; }
   .exercise-block{ transition:box-shadow .15s, transform .15s; }
   .exercise-block.done .drag-handle, .exercise-block.collapsed .drag-handle{ opacity:0.6; }
@@ -630,9 +634,10 @@
     display:none;
   }
   .exercise-block.collapsed .block-summary{
-    display:flex;
-    cursor:pointer;
+    display:none;
   }
+  .exercise-block.collapsed .block-header{ margin-bottom:0; }
+  #exerciseBlocksContainer .exercise-block.collapsed .rename-btn{ display:none; }
   .exercise-block.done, .exercise-block.collapsed{
     cursor:pointer;
   }
@@ -640,8 +645,12 @@
     display:none;
   }
   .warmup-card.done .block-summary{
-    display:flex;
+    display:flex; font-size:12px; font-weight:600; color:var(--ink-dim); padding:0;
   }
+  /* once the warm-up is ticked it shrinks to a faint one-liner */
+  .warmup-card{ transition:opacity .35s ease, padding .35s ease; }
+  .warmup-card.done{ opacity:0.55; padding:8px 14px; box-shadow:none; cursor:pointer; margin-bottom:10px; }
+  .warmup-card.done .block-header{ display:none; }
   .warmup-card .done-toggle-btn{
     opacity:0.35;
   }
@@ -3672,11 +3681,18 @@ $('warmupDoneBtn').addEventListener('click', ()=>{
   card.classList.add('done');
   const text = $('warmupInput').value.trim();
   $('warmupSummary').innerHTML =
-    `<span>✓ ${text || 'Warmed up!'}</span><button class="undo-done-btn" id="warmupUndoBtn" type="button">↺ Edit</button>`;
-  $('warmupUndoBtn').addEventListener('click', ()=>{
+    `<span>🔥 Warm-up done</span><button class="undo-done-btn" id="warmupUndoBtn" type="button">↺ undo</button>`;
+  $('warmupUndoBtn').addEventListener('click', (e)=>{
+    e.stopPropagation();
     card.classList.remove('done');
   });
   scheduleDraftSave();
+});
+// tapping the faint one-liner opens the warm-up again
+$('warmupCard').addEventListener('click', (e)=>{
+  if(e.target.closest('#warmupDoneBtn')) return; // the tick's own tap must not undo itself
+  const card = $('warmupCard');
+  if(card.classList.contains('done')) card.classList.remove('done');
 });
 
 $('clearFormBtn').addEventListener('click', async ()=>{
@@ -6158,27 +6174,55 @@ setTimeout(checkForNewVersion, 4000);
   function interactive(el){
     return el.closest && el.closest('input, textarea, select, button, label, .exercise-search-results, .set-num');
   }
-  function reorderAt(y){
+  let grabOffset=0, curDelta=0;
+  // moves neighbours to their new place with a short slide instead of a jump (FLIP)
+  function flipAround(mutate){
+    const others=[...container.querySelectorAll('.exercise-block')].filter(b=>b!==dragBlock);
+    const before=new Map(others.map(b=>[b,b.getBoundingClientRect().top]));
+    mutate();
+    others.forEach(b=>{
+      const d=before.get(b)-b.getBoundingClientRect().top;
+      if(!d) return;
+      b.style.transition='none'; b.style.transform=`translateY(${d}px)`;
+      b.getBoundingClientRect();
+      b.style.transition='transform .18s ease'; b.style.transform='';
+      setTimeout(()=>{ if(!b.style.transform) b.style.transition=''; }, 220);
+    });
+  }
+  // keeps the lifted card under your finger, wherever the layout currently puts it
+  function positionDragged(){
+    const r=dragBlock.getBoundingClientRect();
+    const natural=r.top-curDelta;
+    curDelta=(lastY-grabOffset)-natural;
+    dragBlock.style.transform=`translateY(${curDelta}px) scale(1.02)`;
+  }
+  function reorderAt(){
+    const cTop=container.getBoundingClientRect().top;
+    const center=(lastY-grabOffset+dragBlock.offsetHeight/2)-cTop;
     const others=[...container.querySelectorAll('.exercise-block')].filter(b=>b!==dragBlock);
     let before=null;
-    for(const b of others){ const r=b.getBoundingClientRect(); if(y < r.top + r.height/2){ before=b; break; } }
-    if(before){ if(dragBlock.nextSibling!==before) container.insertBefore(dragBlock,before); }
-    else if(container.lastElementChild!==dragBlock){ container.appendChild(dragBlock); }
+    for(const b of others){ if(center < b.offsetTop + b.offsetHeight/2){ before=b; break; } }
+    const needMove = before ? dragBlock.nextElementSibling!==before : container.lastElementChild!==dragBlock;
+    if(needMove) flipAround(()=>{ if(before) container.insertBefore(dragBlock,before); else container.appendChild(dragBlock); });
+    positionDragged();
   }
   function autoScroll(){
     if(!dragBlock) return;
     const edge=90;
     if(lastY<edge) window.scrollBy(0,-12); else if(lastY>window.innerHeight-edge) window.scrollBy(0,12);
-    reorderAt(lastY);
+    reorderAt();
     scrollRAF=requestAnimationFrame(autoScroll);
   }
   function beginDrag(){
     timer=null;
     if(!startBlock) return;
-    dragBlock=startBlock; lastY=startY;
+    dragBlock=startBlock; lastY=startY; curDelta=0;
+    grabOffset=startY-dragBlock.getBoundingClientRect().top;
+    dragBlock.style.transition='none';
     dragBlock.classList.add('dragging');
     document.body.classList.add('is-dragging');
     try{ if(navigator.vibrate) navigator.vibrate(12); }catch(e){}
+    positionDragged();
     scrollRAF=requestAnimationFrame(autoScroll);
   }
   function cancelPending(){ if(timer){ clearTimeout(timer); timer=null; } startBlock=null; }
@@ -6186,7 +6230,11 @@ setTimeout(checkForNewVersion, 4000);
     cancelPending();
     if(!dragBlock) return;
     cancelAnimationFrame(scrollRAF);
-    dragBlock.classList.remove('dragging');
+    // the lifted card glides into its slot instead of snapping
+    const dropped=dragBlock;
+    dropped.classList.remove('dragging');
+    dropped.style.transition='transform .16s ease'; dropped.style.transform='';
+    setTimeout(()=>{ if(!dropped.style.transform) dropped.style.transition=''; }, 200);
     document.body.classList.remove('is-dragging');
     dragBlock=null;
     justDragged=true; setTimeout(()=>{ justDragged=false; }, 350);
@@ -6202,7 +6250,7 @@ setTimeout(checkForNewVersion, 4000);
     timer=setTimeout(beginDrag, HOLD_MS);
   }
   function move(x,y,e){
-    if(dragBlock){ lastY=y; reorderAt(y); if(e.cancelable) e.preventDefault(); return; }
+    if(dragBlock){ lastY=y; reorderAt(); if(e.cancelable) e.preventDefault(); return; }
     if(timer && (Math.abs(x-startX)>MOVE_TOLERANCE || Math.abs(y-startY)>MOVE_TOLERANCE)) cancelPending();
   }
 
